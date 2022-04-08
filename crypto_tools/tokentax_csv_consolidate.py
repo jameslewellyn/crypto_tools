@@ -188,7 +188,7 @@ def match_transaction_list_to_alteration(
     for alteration in alterations_mapping.alteration_patterns:
         if len(alteration.before_patterns) == transaction_list_length:
             if all_transactions_in_before_pattern_list(transaction_list, alteration.before_patterns):
-                logger.info("Found alteration matching input transaction.")
+                logger.debug("Found alteration matching input transaction.")
                 return alteration
     else:
         return None
@@ -290,6 +290,18 @@ def alter_transactions(
     return trade_list
 
 
+def preserve_transactions_by_type(
+    transaction_list: List[TokenTaxTransaction],
+    preservation_transaction_type: TokenTaxTransactionType,
+) -> List[TokenTaxTransaction]:
+    """Keep only transactions of the specified type."""
+    preserve_list: List[TokenTaxTransaction] = list()
+    for transaction in transaction_list:
+        if transaction.transaction_type.value == preservation_transaction_type:
+            preserve_list.append(transaction)
+    return preserve_list
+
+
 def main() -> None:
     """Do the main thing."""
     # Get arguments
@@ -381,17 +393,25 @@ def main() -> None:
                     output_transaction_hash_count_dict[same_transaction_hash_count] = 0
                 output_transaction_hash_count_dict[same_transaction_hash_count] += 1
                 if alteration.action == "alter_transactions_to_trade":
-                    logger.info("Converting to trade transactions.")
+                    logger.debug("Converting to trade transactions.")
                     output_transaction_list += alter_transactions(
                         separated_transaction_list,
                         TokenTaxTransactionType.TRADE,
                     )
-                if alteration.action == "alter_transactions_to_migration":
-                    logger.info("Converting to migration transactions.")
+                elif alteration.action == "alter_transactions_to_migration":
+                    logger.debug("Converting to migration transactions.")
                     output_transaction_list += alter_transactions(
                         separated_transaction_list,
                         TokenTaxTransactionType.MIGRATION,
                     )
+                elif alteration.action == "keep_only_trade_transactions":
+                    logger.debug("Remove all transactions that are not trades.")
+                    output_transaction_list += preserve_transactions_by_type(
+                        separated_transaction_list,
+                        TokenTaxTransactionType.TRADE,
+                    )
+                elif alteration.action == "do_nothing":
+                    logger.debug("Transactions need no alterations.")
 
     logger.info("INPUT COUNTS: %r", input_transaction_hash_count_dict)
     logger.info("NOMATCH COUNTS: %r", no_match_transaction_hash_count_dict)

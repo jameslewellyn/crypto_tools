@@ -11,9 +11,61 @@ alteration_patterns:
     -
         before_patterns:
             -
+                transaction_type: Trade
+                buy_currency: FRAX
+                sell_currency: CLAM2
+            -
+                transaction_type: Lost
+                sell_currency: CLAM2
+        action: do_nothing
+    -
+        before_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: MIMATIC
+                sell_currency: CLAM2
+            -
+                transaction_type: Lost
+                sell_currency: CLAM2
+        action: do_nothing
+    -
+        before_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: SLP-FRAX/CLAM2
+                sell_currency: FRAX
+            -
+                transaction_type: Trade
+                buy_currency: SLP-FRAX/CLAM2
+                sell_currency: CLAM2
+            -
+                transaction_type: Withdrawal
+                sell_currency: SLP-FRAX/CLAM2
+        action: keep_only_trade_transactions
+    -
+        before_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: SCLAM2
+            -
+                transaction_type: Deposit
+                buy_currency: CLAM2
+        action: alter_transactions_to_migration
+    -
+        before_patterns:
+            -
                 transaction_type: Withdrawal
                 sell_currency: SCLAM2
             -
                 transaction_type: Deposit
                 buy_currency: PEARL
+        action: alter_transactions_to_migration
+    -
+        before_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: CLAM2
+            -
+                transaction_type: Deposit
+                buy_currency: SCLAM2
         action: alter_transactions_to_migration
