@@ -1,0 +1,19 @@
+alteration_patterns:
+    -
+        before_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: WETH
+            -
+                transaction_type: Deposit
+                buy_currency: USDC
+        action: alter_transactions_to_trade
+    -
+        before_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: SCLAM2
+            -
+                transaction_type: Deposit
+                buy_currency: PEARL
+        action: alter_transactions_to_migration

@@ -15,6 +15,8 @@ tokentax_csv_consolidate = 'crypto_tools.tokentax_csv_consolidate:main'
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pydantic = "*"
+pyyaml = "*"
 
 [tool.poetry.dev-dependencies]
 black = "*"
@@ -45,6 +47,7 @@ flake8-typing-imports = "*"
 mypy = "*"
 pep8-naming = "*"
 pytest = "*"
+types-PyYAML = "*"
 
 [tool.black]
 line-length = 120
