@@ -109,6 +109,7 @@ class AlterationTransactionPattern(BaseModel):
     transaction_type: str
     buy_currency: Optional[str]
     sell_currency: Optional[str]
+    exchange: Optional[str]
 
 
 class AlterationActionDoNothing(BaseModel):
@@ -171,9 +172,15 @@ def ensure_common_elements_are_identical_in_transaction_list(transaction_list: L
         raise Exception("Cannot handle multiple Import Names within the same transaction hash.")
     if not all(transaction.comment == transaction_list[0].comment for transaction in transaction_list):
         raise Exception("Cannot handle multiple Comments within the same transaction hash.")
-    if not all(transaction.date == transaction_list[0].date for transaction in transaction_list):
+    if not all(
+        transaction.date.replace(microsecond=0) == transaction_list[0].date.replace(microsecond=0)
+        for transaction in transaction_list
+    ):
         raise Exception("Cannot handle multiple Dates within the same transaction hash.")
-    if not all(transaction.updated_at == transaction_list[0].updated_at for transaction in transaction_list):
+    if not all(
+        transaction.updated_at.replace(microsecond=0) == transaction_list[0].updated_at.replace(microsecond=0)
+        for transaction in transaction_list
+    ):
         raise Exception("Cannot handle multiple Updated At Times within the same transaction hash.")
 
 
@@ -351,6 +358,27 @@ class AlterationActionConvertToMigration(BaseModel):
         return convert_to_migration(transaction_list)
 
 
+class AlterationActionConvertToStaking(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_to_staking"]
+
+    def perform_on_transaction_list(
+        self: AlterationActionDoNothing,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to a staking."""
+        staking_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.transaction_type != TokenTaxTransactionType.DEPOSIT:
+                raise Exception("Found transaction type other than Deposit when converting to Staking.")
+            else:
+                staking_transaction = transaction
+                staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
+                staking_transaction_list.append(staking_transaction)
+        return staking_transaction_list
+
+
 def keep_transactions_by_type(
     transaction_list: List[TokenTaxTransaction],
     keep_transaction_type_list: List[TokenTaxTransactionType],
@@ -363,14 +391,14 @@ def keep_transactions_by_type(
     return kept_transaction_list
 
 
-class AlterationActionKeepOnly(BaseModel):
+class AlterationActionKeepOnlyTypes(BaseModel):
     """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
 
-    name: Literal["keep_only"]
+    name: Literal["keep_only_types"]
     keeps: Sequence[str]
 
     def perform_on_transaction_list(
-        self: AlterationActionKeepOnly,
+        self: AlterationActionKeepOnlyTypes,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Remove all transactions except listed types."""
@@ -388,7 +416,7 @@ class AlterationActionRenameToken(BaseModel):
     rename_to: str
 
     def perform_on_transaction_list(
-        self: AlterationActionKeepOnly,
+        self: AlterationActionKeepOnlyTypes,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Remove all transactions except listed types."""
@@ -413,8 +441,85 @@ class AlterationActionRemoveContaining(BaseModel):
         """Remove all transactions except listed types."""
         updated_transaction_list: List[TokenTaxTransaction] = list()
         for transaction in transaction_list:
-            updated_transaction_list.append(transaction)
+            if transaction.buy_currency not in self.removes and transaction.sell_currency not in self.removes:
+                updated_transaction_list.append(transaction)
         return updated_transaction_list
+
+
+class AlterationActionMergeSameCurrency(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["merge_same_currency"]
+    merge_currency: str
+
+    def perform_on_transaction_list(
+        self: AlterationActionRemoveContaining,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Remove all transactions except listed types."""
+        mergable_transaction_list: List[TokenTaxTransaction] = list()
+        modified_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.buy_currency == self.merge_currency or transaction.sell_currency == self.merge_currency:
+                mergable_transaction_list.append(transaction)
+            else:
+                modified_transaction_list.append(transaction)
+        net_merged_value: float = 0.0
+        if len(mergable_transaction_list) == 0:
+            raise Exception("No mergeable transactions found for token %s.", self.merge_currency)
+        (fee_amount, fee_currency) = find_fees_from_transaction_list(mergable_transaction_list)
+        usd_equivalent = find_usd_equivalent_from_transaction_list(mergable_transaction_list)
+        ensure_common_elements_are_identical_in_transaction_list(mergable_transaction_list)
+        for mergable_transaction in mergable_transaction_list:
+            if mergable_transaction.buy_amount != 0.0 and mergable_transaction.sell_amount != 0.0:
+                raise Exception("Cannot merge in a transaction with both a buy and sell component")
+            elif mergable_transaction.buy_amount != 0.0:
+                net_merged_value += mergable_transaction.buy_amount
+            elif mergable_transaction.sell_amount != 0.0:
+                net_merged_value -= mergable_transaction.sell_amount
+        if net_merged_value > 0:
+            modified_transaction_list.append(
+                TokenTaxTransaction(
+                    TokenTaxTransactionType.DEPOSIT,
+                    net_merged_value,
+                    self.merge_currency,
+                    0.0,
+                    "",
+                    fee_amount,
+                    fee_currency,
+                    modified_transaction_list[0].exchange,
+                    modified_transaction_list[0].exchange_id,
+                    modified_transaction_list[0].group,
+                    modified_transaction_list[0].import_name,
+                    modified_transaction_list[0].comment,
+                    modified_transaction_list[0].date,
+                    usd_equivalent,
+                    modified_transaction_list[0].updated_at,
+                ),
+            )
+        elif net_merged_value < 0:
+            modified_transaction_list.append(
+                TokenTaxTransaction(
+                    TokenTaxTransactionType.WITHDRAWAL,
+                    0.0,
+                    "",
+                    net_merged_value,
+                    self.merge_currency,
+                    fee_amount,
+                    fee_currency,
+                    modified_transaction_list[0].exchange,
+                    modified_transaction_list[0].exchange_id,
+                    modified_transaction_list[0].group,
+                    modified_transaction_list[0].import_name,
+                    modified_transaction_list[0].comment,
+                    modified_transaction_list[0].date,
+                    usd_equivalent,
+                    modified_transaction_list[0].updated_at,
+                ),
+            )
+        else:
+            raise Exception("Merge cancelled out completely.")
+        return modified_transaction_list
 
 
 AlterationActionUnion = Annotated[
@@ -422,9 +527,11 @@ AlterationActionUnion = Annotated[
         AlterationActionDoNothing,
         AlterationActionConvertToTrades,
         AlterationActionConvertToMigration,
-        AlterationActionKeepOnly,
+        AlterationActionConvertToStaking,
+        AlterationActionKeepOnlyTypes,
         AlterationActionRenameToken,
         AlterationActionRemoveContaining,
+        AlterationActionMergeSameCurrency,
     ],
     Field(discriminator="name"),
 ]
@@ -451,27 +558,43 @@ def compare_tokentax_transaction_to_alteration_tx_pattern(
     logger.debug("tx type: %s", tokentax_transaction.transaction_type.value)
     logger.debug("tx buyc: %s", tokentax_transaction.buy_currency)
     logger.debug("tx sellc: %s", tokentax_transaction.sell_currency)
+    logger.debug("tx exchange: %s", tokentax_transaction.exchange)
     logger.debug("alt type: %s", alteration_transaction_pattern.transaction_type)
     logger.debug("alt buyc: %s", alteration_transaction_pattern.buy_currency)
     logger.debug("alt sellc: %s", alteration_transaction_pattern.sell_currency)
-    if (
-        (tokentax_transaction.transaction_type.value == alteration_transaction_pattern.transaction_type)
-        and (
-            (tokentax_transaction.buy_currency == alteration_transaction_pattern.buy_currency)
-            or ((tokentax_transaction.buy_currency == "") and (alteration_transaction_pattern.buy_currency is None))
-        )
-        and (
-            (tokentax_transaction.sell_currency == alteration_transaction_pattern.sell_currency)
-            or ((tokentax_transaction.sell_currency == "") and (alteration_transaction_pattern.sell_currency is None))
-        )
-    ):
-        logger.debug("Matched before-pattern in alteration.")
-        return True
-    else:
-        logger.debug("No-match before-pattern in alteration.")
-        logger.debug("Transaction: %r", tokentax_transaction)
-        logger.debug("Before pattern: %r", alteration_transaction_pattern)
+    logger.debug("alt exchange: %s", alteration_transaction_pattern.exchange)
+    common_elements: int = 0
+    if alteration_transaction_pattern.transaction_type is not None:
+        if tokentax_transaction.transaction_type.value == alteration_transaction_pattern.transaction_type:
+            logger.debug("Transaction and alteration transaction pattern have same transaction type.")
+            common_elements += 1
+        else:
+            logger.debug("Transaction does not match alteration transaction pattern.")
+            return False
+    if alteration_transaction_pattern.buy_currency is not None:
+        if tokentax_transaction.buy_currency == alteration_transaction_pattern.buy_currency:
+            logger.debug("Transaction and alteration transaction pattern have same buy currency.")
+            common_elements += 1
+        else:
+            logger.debug("Transaction does not match alteration transaction pattern.")
+            return False
+    if alteration_transaction_pattern.sell_currency is not None:
+        if tokentax_transaction.sell_currency == alteration_transaction_pattern.sell_currency:
+            logger.debug("Transaction and alteration transaction pattern have same sell currency.")
+            common_elements += 1
+        else:
+            logger.debug("Transaction does not match alteration transaction pattern.")
+            return False
+    if alteration_transaction_pattern.exchange is not None:
+        if tokentax_transaction.exchange == alteration_transaction_pattern.exchange:
+            logger.debug("Transaction and alteration transaction pattern have same Exchange.")
+            common_elements += 1
+    if common_elements == 0:
+        logger.debug("No common elements found between transaction and alteration pattern.")
         return False
+    else:
+        logger.debug("Transaction matches alteration transaction pattern with % d common elements.", common_elements)
+        return True
 
 
 def transaction_in_tx_pattern_list(
@@ -526,6 +649,7 @@ def quick_print_transactions_same_hash_list(transaction_list: List[TokenTaxTrans
             transaction.sell_currency,
             transaction.sell_amount,
         )
+    logger.info("")
 
 
 def main() -> None:
@@ -622,6 +746,8 @@ def main() -> None:
                 # quick_print_transactions_same_hash_list(modified_transaction_list)
         # logger.info("__________________________________________________")
 
+    # ogger.info("")
+    logger.info("------------------------")
     logger.info("INPUT COUNTS: %r", input_transaction_hash_count_dict)
     logger.info("NOMATCH COUNTS: %r", no_match_transaction_hash_count_dict)
     logger.info("OUTPUT PAIRED COUNTS: %r", output_transaction_hash_count_dict)
