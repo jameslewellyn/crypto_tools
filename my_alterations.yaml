@@ -1,15 +1,267 @@
-alteration_patterns:
+alterations:
     -
-        before_patterns:
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: WETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MOOQUICK
+            -
+                transaction_type: Withdrawal
+                sell_currency: QUICK
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: QI
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: QUICK
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: BIFI
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: AMUSDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: AMWETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: AMWETH
+            -
+                transaction_type: Withdrawal
+                sell_currency: AMUSDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: AMUSDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: CAMUSDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: CAMUSDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: AMUSDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: CRVUSDBTCETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: CRVUSDBTCETH
+            -
+                transaction_type: Withdrawal
+                sell_currency: MOOCURVEATRICRYPTO3
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: VCURVEATRICRYPTO3
+            -
+                transaction_type: Withdrawal
+                sell_currency: CRVUSDBTCETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MOOCURVEATRICRYPTO3
+            -
+                transaction_type: Withdrawal
+                sell_currency: CRVUSDBTCETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: CRVUSDBTCETH
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDT
+            -
+                transaction_type: Withdrawal
+                sell_currency: WBTC
+            -
+                transaction_type: Withdrawal
+                sell_currency: DAI
             -
                 transaction_type: Withdrawal
                 sell_currency: WETH
             -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: CRVUSDBTCETH
+            -
+                transaction_type: Deposit
+                buy_currency: WBTC
+            -
+                transaction_type: Deposit
+                buy_currency: WETH
+            -
+                transaction_type: Deposit
+                buy_currency: USDT
+            -
                 transaction_type: Deposit
                 buy_currency: USDC
-        action: alter_transactions_to_trade
+            -
+                transaction_type: Deposit
+                buy_currency: DAI
+        actions:
+            -
+                name: convert_to_trades
     -
-        before_patterns:
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDT
+            -
+                transaction_type: Withdrawal
+                sell_currency: DAI
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+            -
+                transaction_type: Deposit
+                buy_currency: CRVUSDBTCETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MOOPOLYGONBIFI
+            -
+                transaction_type: Withdrawal
+                sell_currency: BIFI
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MOOMAIQI-MATIC
+            -
+                transaction_type: Deposit
+                buy_currency: WMATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-MATIC/QI
+            -
+                name: remove_containing
+                removes:
+                    - WMATIC
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: MOOMAIQI-MATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
             -
                 transaction_type: Trade
                 buy_currency: FRAX
@@ -17,9 +269,23 @@ alteration_patterns:
             -
                 transaction_type: Lost
                 sell_currency: CLAM2
-        action: do_nothing
+        actions:
+            -
+                name: do_nothing
     -
-        before_patterns:
+        tx_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: CLAM2
+                sell_currency: MATIC
+            -
+                transaction_type: Lost
+                sell_currency: MATIC
+        actions:
+            -
+                name: do_nothing
+    -
+        tx_patterns:
             -
                 transaction_type: Trade
                 buy_currency: MIMATIC
@@ -27,9 +293,11 @@ alteration_patterns:
             -
                 transaction_type: Lost
                 sell_currency: CLAM2
-        action: do_nothing
+        actions:
+            -
+                name: do_nothing
     -
-        before_patterns:
+        tx_patterns:
             -
                 transaction_type: Trade
                 buy_currency: SLP-FRAX/CLAM2
@@ -41,31 +309,59 @@ alteration_patterns:
             -
                 transaction_type: Withdrawal
                 sell_currency: SLP-FRAX/CLAM2
-        action: keep_only_trade_transactions
+        actions:
+            -
+                name: keep_only
+                keeps:
+                    - Trade
     -
-        before_patterns:
+        tx_patterns:
             -
                 transaction_type: Withdrawal
                 sell_currency: SCLAM2
             -
                 transaction_type: Deposit
                 buy_currency: CLAM2
-        action: alter_transactions_to_migration
-    -
-        before_patterns:
+        actions:
             -
-                transaction_type: Withdrawal
-                sell_currency: SCLAM2
-            -
-                transaction_type: Deposit
-                buy_currency: PEARL
-        action: alter_transactions_to_migration
+                name: convert_to_migration
     -
-        before_patterns:
+        tx_patterns:
             -
                 transaction_type: Withdrawal
                 sell_currency: CLAM2
             -
                 transaction_type: Deposit
                 buy_currency: SCLAM2
-        action: alter_transactions_to_migration
+        actions:
+            -
+                name: convert_to_migration
+    -
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: SCLAM2
+            -
+                transaction_type: Deposit
+                buy_currency: PEARL
+        actions:
+            -
+                name: convert_to_migration
+    -
+        tx_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: UNI-V2-MATIC/QI
+                sell_currency: MATIC
+            -
+                transaction_type: Trade
+                buy_currency: UNI-V2-MATIC/QI
+                sell_currency: QI
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2-MATIC/QI
+        actions:
+            -
+                name: keep_only
+                keeps:
+                    - Trade
