@@ -540,21 +540,6 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
-                buy_currency: MOOCURVEAM3CRV
-            -
-                transaction_type: Deposit
-                buy_currency: JEUR
-        actions:
-            -
-                name: remove_containing
-                removes:
-                    - MOOCURVEAM3CRV
-            -
-                name: convert_to_staking
-    -
-        tx_patterns:
-            -
-                transaction_type: Deposit
                 buy_currency: DAI
             -
                 transaction_type: Deposit
@@ -705,6 +690,32 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: MOOCURVEATRICRYPTO
+            -
+                transaction_type: Deposit
+                buy_currency: BONE
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: MOOCURVEATRICRYPTO
+                staked_token: STAKED-MOOCURVEATRICRYPTO
+                rewards:
+                    - BONE
+    -
+        tx_hash: "0x881b699b32bff821253dbebfecea17c86481248fab81232c38e5610a58bf3a01"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: BONE
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: BONE
+                staked_token: STAKED-BONE
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: BONE
         actions:
             -
@@ -712,18 +723,58 @@ alterations:
     -
         tx_patterns:
             -
-                transaction_type: Deposit
-                buy_currency: MOOCURVEATRICRYPTO
-            -
-                transaction_type: Deposit
-                buy_currency: BONE
+                transaction_type: Withdrawal
+                sell_currency: BONE
         actions:
             -
-                name: remove_containing
-                removes:
-                    - MOOCURVEATRICRYPTO
+                name: convert_to_stake_migration
+                unstaked_token: BONE
+                staked_token: STAKED-BONE
+    -
+        tx_patterns:
             -
-                name: convert_to_staking
+                transaction_type: Withdrawal
+                sell_currency: MOOCURVEATRICRYPTO3
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: MOOCURVEATRICRYPTO3
+                staked_token: STAKED-MOOCURVEATRICRYPTO3
+    -
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: MOOCURVEAM3CRV
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: MOOCURVEAM3CRV
+                staked_token: STAKED-MOOCURVEAM3CRV
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MOOCURVEAM3CRV
+            -
+                transaction_type: Deposit
+                buy_currency: JEUR
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: MOOCURVEAM3CRV
+                staked_token: STAKED-MOOCURVEAM3CRV
+                rewards:
+                    - JEUR
+    -
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: ALPHA
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: ALPHA
+                staked_token: STAKED-ALPHA
     -
         tx_patterns:
             -
@@ -734,11 +785,11 @@ alterations:
                 buy_currency: ALPHA
         actions:
             -
-                name: remove_containing
-                removes:
-                    - MOOCURVEATRICRYPTO3
-            -
-                name: convert_to_staking
+                name: convert_to_stake_migration
+                unstaked_token: MOOCURVEATRICRYPTO3
+                staked_token: STAKED-MOOCURVEATRICRYPTO3
+                rewards:
+                    - ALPHA
     -
         tx_patterns:
             -
