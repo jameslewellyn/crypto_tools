@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
 import enum
 import locale
@@ -19,7 +20,7 @@ from pydantic import BaseModel, Field
 
 import yaml
 
-locale.setlocale(locale.LC_ALL, "")
+locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
 currency_symbol = str(locale.localeconv()["currency_symbol"])
 
 package_logger = logging.getLogger(__package__)
@@ -99,7 +100,7 @@ class TokenTaxTransaction:
             transaction_dict["Import"],
             transaction_dict["Comment"],
             datetime.strptime(transaction_dict["Date"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-            Decimal(transaction_dict["USDEquivalent"].strip(currency_symbol)),
+            Decimal(locale.atof(transaction_dict["USDEquivalent"].strip(currency_symbol))),
             datetime.strptime(transaction_dict["UpdatedAt"], "%Y-%m-%dT%H:%M:%S.%fZ"),
         )
 
@@ -319,52 +320,88 @@ class AlterationActionConvertToTrades(BaseModel):
         return convert_to_trades(transaction_list)
 
 
-def convert_to_migration(
+class AlterationActionConvertToSingleStakeTrades(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_to_single_stake_trades"]
+    unstaked_token: str
+    staked_token: str
+
+    def perform_on_transaction_list(
+        self: AlterationActionDoNothing,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to list of trades."""
+        stake_migration_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.buy_currency == self.unstaked_token:
+                raise Exception("Found transaction type other than Withdrawal when converting to Single Stake Trade.")
+            elif transaction.sell_currency == self.unstaked_token:
+                modified_transaction = copy.deepcopy(transaction)
+                modified_transaction.transaction_type = TokenTaxTransactionType.TRADE
+                modified_transaction.buy_amount = modified_transaction.sell_amount
+                modified_transaction.buy_currency = self.staked_token
+                stake_migration_transaction_list.append(modified_transaction)
+            else:
+                stake_migration_transaction_list.append(transaction)
+        return stake_migration_transaction_list
+
+
+def convert_to_migrations(
     transaction_list: List[TokenTaxTransaction],
 ) -> List[TokenTaxTransaction]:
     """Merge 2 transactions into a migration transaction."""
     buy_only_list: List[TokenTaxTransaction] = list()
     sell_only_list: List[TokenTaxTransaction] = list()
-    migration_transaction: TokenTaxTransaction
+    trade_list: List[TokenTaxTransaction] = list()
+    converted_transaction_list: List[TokenTaxTransaction] = list()
     (fee_amount, fee_currency) = find_fees_from_transaction_list(transaction_list)
     usd_equivalent = find_usd_equivalent_from_transaction_list(transaction_list)
     ensure_common_elements_are_identical_in_transaction_list(transaction_list)
     for transaction in transaction_list:
-        if transaction.buy_currency != "" and transaction.sell_currency == "":
+        if transaction.transaction_type == TokenTaxTransactionType.TRADE:
+            trade_list.append(transaction)
+        elif transaction.buy_currency != "" and transaction.sell_currency == "":
             buy_only_list.append(transaction)
-        if transaction.buy_currency == "" and transaction.sell_currency != "":
+        elif transaction.buy_currency == "" and transaction.sell_currency != "":
             sell_only_list.append(transaction)
     buy_only_list_length = len(buy_only_list)
     sell_only_list_length = len(sell_only_list)
     if buy_only_list_length == 1 and sell_only_list_length == 1:
         buy_transaction = buy_only_list[0]
         sell_transaction = sell_only_list[0]
-        migration_transaction = TokenTaxTransaction(
-            TokenTaxTransactionType.MIGRATION,
-            buy_transaction.buy_amount,
-            buy_transaction.buy_currency,
-            sell_transaction.sell_amount,
-            sell_transaction.sell_currency,
-            fee_amount,
-            fee_currency,
-            buy_transaction.exchange,
-            buy_transaction.exchange_id,
-            buy_transaction.group,
-            buy_transaction.import_name,
-            buy_transaction.comment,
-            buy_transaction.date,
-            usd_equivalent,
-            buy_transaction.updated_at,
+        converted_transaction_list.append(
+            TokenTaxTransaction(
+                TokenTaxTransactionType.MIGRATION,
+                buy_transaction.buy_amount,
+                buy_transaction.buy_currency,
+                sell_transaction.sell_amount,
+                sell_transaction.sell_currency,
+                fee_amount,
+                fee_currency,
+                buy_transaction.exchange,
+                buy_transaction.exchange_id,
+                buy_transaction.group,
+                buy_transaction.import_name,
+                buy_transaction.comment,
+                buy_transaction.date,
+                usd_equivalent,
+                buy_transaction.updated_at,
+            ),
         )
-    else:
-        raise Exception("Cannot merge transactions to Migration unless there is one Buy and one Sell.")
-    return [migration_transaction]
+    elif buy_only_list_length != 0 and sell_only_list_length != 0:
+        raise Exception("Cannot merge Buy/Sell transactions to Migration unless there is one Buy and one Sell.")
+    for transaction in trade_list:
+        converted_trade_transaction = transaction
+        converted_trade_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
+        converted_transaction_list.append(converted_trade_transaction)
+    return converted_transaction_list
 
 
-class AlterationActionConvertToMigration(BaseModel):
+class AlterationActionConvertToMigrations(BaseModel):
     """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
 
-    name: Literal["convert_to_migration"]
+    name: Literal["convert_to_migrations"]
     rewards: Optional[Sequence[str]]
 
     def perform_on_transaction_list(
@@ -373,12 +410,12 @@ class AlterationActionConvertToMigration(BaseModel):
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a migration."""
         if self.rewards is None:
-            return convert_to_migration(transaction_list)
+            return convert_to_migrations(transaction_list)
         else:
             (rewards_list, migration_list) = separate_transactions_by_containing(transaction_list, self.rewards)
             for rewards_transaction in rewards_list:
                 rewards_transaction.transaction_type = TokenTaxTransactionType.STAKING
-            return rewards_list + convert_to_migration(migration_list)
+            return rewards_list + convert_to_migrations(migration_list)
 
 
 class AlterationActionConvertToStaking(BaseModel):
@@ -402,30 +439,51 @@ class AlterationActionConvertToStaking(BaseModel):
         return staking_transaction_list
 
 
+def convert_to_stake_migrations(
+    transaction_list: List[TokenTaxTransaction],
+    unstaked_token: str,
+    staked_token: str,
+) -> List[TokenTaxTransaction]:
+    """P yDantic class schema for actions to be taken, in order, on the list of transactions."""
+    stake_migration_transaction_list: List[TokenTaxTransaction] = list()
+    for transaction in transaction_list:
+        if transaction.buy_currency == unstaked_token:
+            modified_transaction = copy.deepcopy(transaction)
+            modified_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
+            modified_transaction.sell_amount = modified_transaction.buy_amount
+            modified_transaction.sell_currency = staked_token
+            stake_migration_transaction_list.append(modified_transaction)
+        elif transaction.sell_currency == unstaked_token:
+            modified_transaction = copy.deepcopy(transaction)
+            modified_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
+            modified_transaction.buy_amount = modified_transaction.sell_amount
+            modified_transaction.buy_currency = staked_token
+            stake_migration_transaction_list.append(modified_transaction)
+        else:
+            stake_migration_transaction_list.append(transaction)
+    return stake_migration_transaction_list
+
+
 class AlterationActionConvertToStakeMigration(BaseModel):
-    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+    """Pyantic class schema for actions to be taken, in order, on the list of transactions."""
 
     name: Literal["convert_to_stake_migration"]
     unstaked_token: str
     staked_token: str
+    rewards: Optional[Sequence[str]]
 
     def perform_on_transaction_list(
         self: AlterationActionDoNothing,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a staking."""
-        stake_migration_transaction_list: List[TokenTaxTransaction] = list()
-        for transaction in transaction_list:
-            if transaction.buy_currency == self.unstaked_token:
-                raise Exception("Found transaction type other than Withdrawal when converting to Stake Migration.")
-            elif transaction.sell_currency == self.unstaked_token:
-                modified_transaction = transaction
-                modified_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
-                modified_transaction.buy_currency = self.staked_token
-                stake_migration_transaction_list.append(modified_transaction)
-            else:
-                stake_migration_transaction_list.append(transaction)
-        return stake_migration_transaction_list
+        if self.rewards is None:
+            return convert_to_stake_migrations(transaction_list, self.unstaked_token, self.staked_token)
+        else:
+            (rewards_list, migration_list) = separate_transactions_by_containing(transaction_list, self.rewards)
+            for rewards_transaction in rewards_list:
+                rewards_transaction.transaction_type = TokenTaxTransactionType.STAKING
+            return rewards_list + convert_to_stake_migrations(migration_list, self.unstaked_token, self.staked_token)
 
 
 def keep_transactions_by_type(
@@ -512,7 +570,7 @@ class AlterationActionMergeSameCurrency(BaseModel):
             if transaction.buy_currency == self.merge_currency or transaction.sell_currency == self.merge_currency:
                 mergable_transaction_list.append(transaction)
             else:
-                modified_transaction_list.append(transaction)
+                modified_transaction_list.append(copy.deepcopy(transaction))
         net_merged_value = Decimal()
         if len(mergable_transaction_list) == 0:
             raise Exception("No mergeable transactions found for token %s.", self.merge_currency)
@@ -552,7 +610,7 @@ class AlterationActionMergeSameCurrency(BaseModel):
                     TokenTaxTransactionType.WITHDRAWAL,
                     Decimal(0),
                     "",
-                    net_merged_value,
+                    abs(net_merged_value),
                     self.merge_currency,
                     fee_amount,
                     fee_currency,
@@ -575,7 +633,8 @@ AlterationActionUnion = Annotated[
     Union[
         AlterationActionDoNothing,
         AlterationActionConvertToTrades,
-        AlterationActionConvertToMigration,
+        AlterationActionConvertToSingleStakeTrades,
+        AlterationActionConvertToMigrations,
         AlterationActionConvertToStaking,
         AlterationActionConvertToStakeMigration,
         AlterationActionKeepOnlyTypes,
@@ -647,13 +706,14 @@ def compare_tokentax_transaction_to_alteration_tx_pattern(
         return True
 
 
-def transaction_in_tx_pattern_list(
+def remove_transaction_from_tx_pattern_list(
     transaction: TokenTaxTransaction,
     tx_patterns: List[AlterationTransactionPattern],
 ) -> bool:
     """Determine if transaction is in before-pattern list."""
     for tx_pattern in tx_patterns:
         if compare_tokentax_transaction_to_alteration_tx_pattern(transaction, tx_pattern):
+            tx_patterns.remove(tx_pattern)
             return True
     else:
         return False
@@ -664,8 +724,9 @@ def all_transactions_in_tx_pattern_list(
     tx_patterns: List[AlterationTransactionPattern],
 ) -> bool:
     """Determine if all transaction are in before-pattern list."""
+    tx_patterns_copy = copy.deepcopy(tx_patterns)
     for transaction in transaction_list:
-        if not transaction_in_tx_pattern_list(transaction, tx_patterns):
+        if not remove_transaction_from_tx_pattern_list(transaction, tx_patterns_copy):
             return False
     else:
         return True
@@ -680,7 +741,7 @@ def match_transaction_list_to_alteration(
     for alteration in alterations_mapping.alterations:
         if len(alteration.tx_patterns) == transaction_list_length:
             if all_transactions_in_tx_pattern_list(transaction_list, alteration.tx_patterns):
-                logger.debug("Found alteration matching input transaction.")
+                logger.debug("Found alteration matching input transaction: %r", alteration)
                 return alteration
     else:
         return None
@@ -767,33 +828,32 @@ def main() -> None:
         if same_transaction_hash_count not in input_transaction_hash_count_dict:
             input_transaction_hash_count_dict[same_transaction_hash_count] = 0
         input_transaction_hash_count_dict[same_transaction_hash_count] += 1
-        if same_transaction_hash_count == 1:
+        alteration = match_transaction_list_to_alteration(alterations_mapping, separated_transaction_list)
+        if alteration is not None:
+            if same_transaction_hash_count not in output_transaction_hash_count_dict:
+                output_transaction_hash_count_dict[same_transaction_hash_count] = 0
+            output_transaction_hash_count_dict[same_transaction_hash_count] += 1
+            modified_transaction_list = copy.deepcopy(separated_transaction_list)
+            for action in alteration.actions:
+                modified_transaction_list = action.perform_on_transaction_list(modified_transaction_list)
+            output_transaction_list += modified_transaction_list
+            quick_print_transactions_same_hash_list(modified_transaction_list)
+        elif same_transaction_hash_count == 1:
             output_transaction_list.append(separated_transaction_list[0])
             quick_print_transactions_same_hash_list(separated_transaction_list)
             if same_transaction_hash_count not in output_transaction_hash_count_dict:
                 output_transaction_hash_count_dict[same_transaction_hash_count] = 0
             output_transaction_hash_count_dict[same_transaction_hash_count] += 1
         else:
-            alteration = match_transaction_list_to_alteration(alterations_mapping, separated_transaction_list)
-            if alteration is None:
-                if same_transaction_hash_count not in no_match_transaction_hash_count_dict:
-                    no_match_transaction_hash_count_dict[same_transaction_hash_count] = 0
-                no_match_transaction_hash_count_dict[same_transaction_hash_count] += 1
-                logger.debug(
-                    "No alteration found for %d transactions with hash %s.",
-                    same_transaction_hash_count,
-                    transaction_hash,
-                )
-                quick_print_transactions_same_hash_list(separated_transaction_list)
-            else:
-                if same_transaction_hash_count not in output_transaction_hash_count_dict:
-                    output_transaction_hash_count_dict[same_transaction_hash_count] = 0
-                output_transaction_hash_count_dict[same_transaction_hash_count] += 1
-                modified_transaction_list = separated_transaction_list
-                for action in alteration.actions:
-                    modified_transaction_list = action.perform_on_transaction_list(modified_transaction_list)
-                output_transaction_list += modified_transaction_list
-                quick_print_transactions_same_hash_list(modified_transaction_list)
+            if same_transaction_hash_count not in no_match_transaction_hash_count_dict:
+                no_match_transaction_hash_count_dict[same_transaction_hash_count] = 0
+            no_match_transaction_hash_count_dict[same_transaction_hash_count] += 1
+            logger.debug(
+                "No alteration found for %d transactions with hash %s.",
+                same_transaction_hash_count,
+                transaction_hash,
+            )
+            quick_print_transactions_same_hash_list(separated_transaction_list)
         logger.info("__________________________________________________")
 
     # logger.info("")
