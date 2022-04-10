@@ -166,6 +166,79 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: DAI
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDT
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DAI
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: USDT
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: WMATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: AM3CRV
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: AM3CRV-GAUGE
+            -
+                transaction_type: Deposit
+                buy_currency: WMATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: AM3CRV
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - WMATIC
+            -
+                name: convert_to_migration
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: CRVUSDBTCETH
             -
                 transaction_type: Withdrawal
@@ -310,6 +383,20 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: DFYNLP
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDT
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: CRVUSDBTCETH
             -
                 transaction_type: Withdrawal
@@ -354,6 +441,78 @@ alterations:
                     - MOOCURVEAM3CRV
             -
                 name: convert_to_staking
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DAI
+            -
+                transaction_type: Deposit
+                buy_currency: BULL
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - DAI
+            -
+                name: convert_to_staking
+    -
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: BULL
+            -
+                transaction_type: Withdrawal
+                sell_currency: BULL
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: BULL
+                staked_token: SINGLE-STAKE-BULL
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DFYNLP
+            -
+                transaction_type: Deposit
+                buy_currency: DFYN
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - DFYNLP
+            -
+                name: convert_to_staking
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: BULL
+            -
+                transaction_type: Deposit
+                buy_currency: BULL
+        actions:
+            -
+                name: merge_same_currency
+                merge_currency: BULL
+            -
+                name: convert_to_staking
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: BULL
+            -
+                transaction_type: Withdrawal
+                sell_currency: BULL
+            -
+                transaction_type: Withdrawal
+                sell_currency: BULL
+        actions:
+            -
+                name: merge_same_currency
+                merge_currency: BULL
     -
         tx_patterns:
             -
@@ -723,6 +882,70 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDT
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DAI
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: USDT
+            -
+                transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: DFYNLP
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DAI
+            -
+                transaction_type: Deposit
+                buy_currency: USDT
+            -
+                transaction_type: Withdrawal
+                sell_currency: DFYNLP
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DFYNLP
+            -
+                transaction_type: Withdrawal
+                sell_currency: DAI
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDT
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: IS3USD
             -
                 transaction_type: Withdrawal
@@ -745,10 +968,35 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: USDT
+            -
+                transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: AM3CRV
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: USDC
             -
                 transaction_type: Withdrawal
                 sell_currency: MOOIRONIRON-USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: AM3CRV
+            -
+                transaction_type: Withdrawal
+                sell_currency: DAI
         actions:
             -
                 name: convert_to_trades
@@ -980,6 +1228,22 @@ alterations:
         actions:
             -
                 name: convert_to_migration
+    -
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: AM3CRV-GAUGE
+            -
+                transaction_type: Deposit
+                buy_currency: AM3CRV
+            -
+                transaction_type: Deposit
+                buy_currency: WMATIC
+        actions:
+            -
+                name: convert_to_migration
+                rewards:
+                    - WMATIC
     -
         tx_patterns:
             -

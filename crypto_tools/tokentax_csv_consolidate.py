@@ -11,6 +11,7 @@ import logging
 import sys
 from dataclasses import dataclass
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 from typing import Annotated, Dict, List, Literal, Optional, Sequence, Tuple, Union
 
@@ -66,11 +67,11 @@ class TokenTaxTransaction:
     """Holds a transaction entry in CSV."""
 
     transaction_type: TokenTaxTransactionType
-    buy_amount: float
+    buy_amount: Decimal
     buy_currency: str
-    sell_amount: float
+    sell_amount: Decimal
     sell_currency: str
-    fee_amount: float
+    fee_amount: Decimal
     fee_currency: str
     exchange: str
     exchange_id: ExchangeID
@@ -78,7 +79,7 @@ class TokenTaxTransaction:
     import_name: str
     comment: str
     date: datetime
-    usd_equivalent: float
+    usd_equivalent: Decimal
     updated_at: datetime
 
     @staticmethod
@@ -86,11 +87,11 @@ class TokenTaxTransaction:
         """Initialize transaction from csv DictReader row."""
         return TokenTaxTransaction(
             TokenTaxTransactionType(transaction_dict["Type"]),
-            float(transaction_dict["BuyAmount"]),
+            Decimal(transaction_dict["BuyAmount"]),
             transaction_dict["BuyCurrency"],
-            float(transaction_dict["SellAmount"]),
+            Decimal(transaction_dict["SellAmount"]),
             transaction_dict["SellCurrency"],
-            float(transaction_dict["FeeAmount"]),
+            Decimal(transaction_dict["FeeAmount"]),
             transaction_dict["FeeCurrency"],
             transaction_dict["Exchange"],
             ExchangeID.create_from_combined_string(transaction_dict["ExchangeId"]),
@@ -98,7 +99,7 @@ class TokenTaxTransaction:
             transaction_dict["Import"],
             transaction_dict["Comment"],
             datetime.strptime(transaction_dict["Date"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-            locale.atof(transaction_dict["USDEquivalent"].strip(currency_symbol)),
+            Decimal(transaction_dict["USDEquivalent"].strip(currency_symbol)),
             datetime.strptime(transaction_dict["UpdatedAt"], "%Y-%m-%dT%H:%M:%S.%fZ"),
         )
 
@@ -125,7 +126,7 @@ class AlterationActionDoNothing(BaseModel):
         return transaction_list
 
 
-def find_fees_from_transaction_list(transaction_list: List[TokenTaxTransaction]) -> Tuple[float, str]:
+def find_fees_from_transaction_list(transaction_list: List[TokenTaxTransaction]) -> Tuple[Decimal, str]:
     """Find fees if any from transaction list."""
     has_fees_list: List[TokenTaxTransaction] = list()
     for transaction in transaction_list:
@@ -133,7 +134,7 @@ def find_fees_from_transaction_list(transaction_list: List[TokenTaxTransaction])
             has_fees_list.append(transaction)
     has_fees_list_length = len(has_fees_list)
     if has_fees_list_length == 0:
-        return (0.0, "")
+        return (Decimal(0), "")
     elif has_fees_list_length == 1:
         fees_transaction = has_fees_list[0]
         return (fees_transaction.fee_amount, fees_transaction.fee_currency)
@@ -141,7 +142,7 @@ def find_fees_from_transaction_list(transaction_list: List[TokenTaxTransaction])
         raise Exception("Cannot handle multiple sources of fees within the same transaction hash.")
 
 
-def find_usd_equivalent_from_transaction_list(transaction_list: List[TokenTaxTransaction]) -> float:
+def find_usd_equivalent_from_transaction_list(transaction_list: List[TokenTaxTransaction]) -> Decimal:
     """Find USD equivalent if any from transaction list."""
     has_usd_equivalent_list: List[TokenTaxTransaction] = list()
     for transaction in transaction_list:
@@ -149,7 +150,7 @@ def find_usd_equivalent_from_transaction_list(transaction_list: List[TokenTaxTra
             has_usd_equivalent_list.append(transaction)
     has_usd_equivalent_list_length = len(has_usd_equivalent_list)
     if has_usd_equivalent_list_length == 0:
-        return 0.0
+        return Decimal()
     elif has_usd_equivalent_list_length == 1:
         usd_equivalent_transaction = has_usd_equivalent_list[0]
         return usd_equivalent_transaction.usd_equivalent
@@ -198,6 +199,21 @@ def separate_buy_from_sell_transactions(
         else:
             raise Exception("Attmepting to make Trade transaction, but found a transaction with both buy and sell.")
     return (buy_only_list, sell_only_list)
+
+
+def separate_transactions_by_containing(
+    transaction_list: List[TokenTaxTransaction],
+    contains_token_list: Sequence[str],
+) -> Tuple[List[TokenTaxTransaction], List[TokenTaxTransaction]]:
+    """Create two sublists splitting by transactions with either only a buy or a sell component."""
+    transactions_containing_list: List[TokenTaxTransaction] = list()
+    transactions_without_list: List[TokenTaxTransaction] = list()
+    for transaction in transaction_list:
+        if transaction.buy_currency in contains_token_list or transaction.sell_currency in contains_token_list:
+            transactions_containing_list.append(transaction)
+        else:
+            transactions_without_list.append(transaction)
+    return (transactions_containing_list, transactions_without_list)
 
 
 def convert_to_trades(
@@ -349,13 +365,20 @@ class AlterationActionConvertToMigration(BaseModel):
     """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
 
     name: Literal["convert_to_migration"]
+    rewards: Optional[Sequence[str]]
 
     def perform_on_transaction_list(
         self: AlterationActionDoNothing,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a migration."""
-        return convert_to_migration(transaction_list)
+        if self.rewards is None:
+            return convert_to_migration(transaction_list)
+        else:
+            (rewards_list, migration_list) = separate_transactions_by_containing(transaction_list, self.rewards)
+            for rewards_transaction in rewards_list:
+                rewards_transaction.transaction_type = TokenTaxTransactionType.STAKING
+            return rewards_list + convert_to_migration(migration_list)
 
 
 class AlterationActionConvertToStaking(BaseModel):
@@ -377,6 +400,32 @@ class AlterationActionConvertToStaking(BaseModel):
                 staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
                 staking_transaction_list.append(staking_transaction)
         return staking_transaction_list
+
+
+class AlterationActionConvertToStakeMigration(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_to_stake_migration"]
+    unstaked_token: str
+    staked_token: str
+
+    def perform_on_transaction_list(
+        self: AlterationActionDoNothing,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to a staking."""
+        stake_migration_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.buy_currency == self.unstaked_token:
+                raise Exception("Found transaction type other than Withdrawal when converting to Stake Migration.")
+            elif transaction.sell_currency == self.unstaked_token:
+                modified_transaction = transaction
+                modified_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
+                modified_transaction.buy_currency = self.staked_token
+                stake_migration_transaction_list.append(modified_transaction)
+            else:
+                stake_migration_transaction_list.append(transaction)
+        return stake_migration_transaction_list
 
 
 def keep_transactions_by_type(
@@ -464,7 +513,7 @@ class AlterationActionMergeSameCurrency(BaseModel):
                 mergable_transaction_list.append(transaction)
             else:
                 modified_transaction_list.append(transaction)
-        net_merged_value: float = 0.0
+        net_merged_value = Decimal()
         if len(mergable_transaction_list) == 0:
             raise Exception("No mergeable transactions found for token %s.", self.merge_currency)
         (fee_amount, fee_currency) = find_fees_from_transaction_list(mergable_transaction_list)
@@ -483,38 +532,38 @@ class AlterationActionMergeSameCurrency(BaseModel):
                     TokenTaxTransactionType.DEPOSIT,
                     net_merged_value,
                     self.merge_currency,
-                    0.0,
+                    Decimal(0),
                     "",
                     fee_amount,
                     fee_currency,
-                    modified_transaction_list[0].exchange,
-                    modified_transaction_list[0].exchange_id,
-                    modified_transaction_list[0].group,
-                    modified_transaction_list[0].import_name,
-                    modified_transaction_list[0].comment,
-                    modified_transaction_list[0].date,
+                    mergable_transaction_list[0].exchange,
+                    mergable_transaction_list[0].exchange_id,
+                    mergable_transaction_list[0].group,
+                    mergable_transaction_list[0].import_name,
+                    mergable_transaction_list[0].comment,
+                    mergable_transaction_list[0].date,
                     usd_equivalent,
-                    modified_transaction_list[0].updated_at,
+                    mergable_transaction_list[0].updated_at,
                 ),
             )
         elif net_merged_value < 0:
             modified_transaction_list.append(
                 TokenTaxTransaction(
                     TokenTaxTransactionType.WITHDRAWAL,
-                    0.0,
+                    Decimal(0),
                     "",
                     net_merged_value,
                     self.merge_currency,
                     fee_amount,
                     fee_currency,
-                    modified_transaction_list[0].exchange,
-                    modified_transaction_list[0].exchange_id,
-                    modified_transaction_list[0].group,
-                    modified_transaction_list[0].import_name,
-                    modified_transaction_list[0].comment,
-                    modified_transaction_list[0].date,
+                    mergable_transaction_list[0].exchange,
+                    mergable_transaction_list[0].exchange_id,
+                    mergable_transaction_list[0].group,
+                    mergable_transaction_list[0].import_name,
+                    mergable_transaction_list[0].comment,
+                    mergable_transaction_list[0].date,
                     usd_equivalent,
-                    modified_transaction_list[0].updated_at,
+                    mergable_transaction_list[0].updated_at,
                 ),
             )
         else:
@@ -528,6 +577,7 @@ AlterationActionUnion = Annotated[
         AlterationActionConvertToTrades,
         AlterationActionConvertToMigration,
         AlterationActionConvertToStaking,
+        AlterationActionConvertToStakeMigration,
         AlterationActionKeepOnlyTypes,
         AlterationActionRenameToken,
         AlterationActionRemoveContaining,
@@ -667,7 +717,7 @@ def main() -> None:
         package_logger.setLevel(logging.DEBUG)
     else:
         package_logger.setLevel(logging.INFO)
-    console_handler = logging.StreamHandler()
+    console_handler = logging.StreamHandler(sys.stdout)
     logger_formatter = logging.Formatter("%(message)s")
     console_handler.setFormatter(logger_formatter)
     package_logger.addHandler(console_handler)
@@ -711,15 +761,15 @@ def main() -> None:
     output_transaction_hash_count_dict: Dict[int, int] = dict()
     output_transaction_list: List[TokenTaxTransaction] = list()
     for (transaction_hash, separated_transaction_list) in separated_transaction_list_of_lists.items():
-        # logger.info("__________________________________________________")
-        # quick_print_transactions_same_hash_list(separated_transaction_list)
+        logger.info("__________________________________________________")
+        quick_print_transactions_same_hash_list(separated_transaction_list)
         same_transaction_hash_count = len(separated_transaction_list)
         if same_transaction_hash_count not in input_transaction_hash_count_dict:
             input_transaction_hash_count_dict[same_transaction_hash_count] = 0
         input_transaction_hash_count_dict[same_transaction_hash_count] += 1
         if same_transaction_hash_count == 1:
-            # output_transaction_list.append(separated_transaction_list[0])
-            # quick_print_transactions_same_hash_list(separated_transaction_list)
+            output_transaction_list.append(separated_transaction_list[0])
+            quick_print_transactions_same_hash_list(separated_transaction_list)
             if same_transaction_hash_count not in output_transaction_hash_count_dict:
                 output_transaction_hash_count_dict[same_transaction_hash_count] = 0
             output_transaction_hash_count_dict[same_transaction_hash_count] += 1
@@ -743,10 +793,10 @@ def main() -> None:
                 for action in alteration.actions:
                     modified_transaction_list = action.perform_on_transaction_list(modified_transaction_list)
                 output_transaction_list += modified_transaction_list
-                # quick_print_transactions_same_hash_list(modified_transaction_list)
-        # logger.info("__________________________________________________")
+                quick_print_transactions_same_hash_list(modified_transaction_list)
+        logger.info("__________________________________________________")
 
-    # ogger.info("")
+    # logger.info("")
     logger.info("------------------------")
     logger.info("INPUT COUNTS: %r", input_transaction_hash_count_dict)
     logger.info("NOMATCH COUNTS: %r", no_match_transaction_hash_count_dict)
