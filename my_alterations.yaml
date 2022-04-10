@@ -1,5 +1,64 @@
 alterations:
     -
+        tx_hash: "0x3e66c4f7ad0777d6a8e01756e71afdcf85eb835072466b17718aa284465e6313"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: SLP
+        actions:
+            -
+                name: rename_to
+                token_name: SLP
+                rename_to: SLP-USDC/IRON
+            -
+                name: convert_to_single_stake_trades
+                unstaked_token: SLP-USDC/IRON
+                staked_token: STAKED-SLP-USDC/IRON
+    -
+        tx_hash: "0x79407d83a8008e448c46404a70e6acf4ec0f6d4246c592509517b63259187a96"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: SLP
+        actions:
+            -
+                name: rename_to
+                token_name: SLP
+                rename_to: SLP-TITAN/IRON
+            -
+                name: convert_to_stake_migration
+                unstaked_token: SLP-TITAN/IRON
+                staked_token: STAKED-SLP-TITAN/IRON
+    -
+        tx_hash: "0x24d158dd976bddcebd06215de09175da7cac024a89c37921da6a13bd3e877dcb"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: SLP
+            -
+                transaction_type: Deposit
+                buy_currency: TITAN
+        actions:
+            -
+                name: rename_to
+                token_name: SLP
+                rename_to: SLP-TITAN/IRON
+    -
+        tx_hash: "0xddc8156902e05ea7008842ee64bd4d1cf937398765685f559c31deac1a34a63f"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: SLP
+        actions:
+            -
+                name: rename_to
+                token_name: SLP
+                rename_to: SLP-USDC/IRON
+            -
+                name: convert_to_single_stake_trades
+                unstaked_token: SLP-USDC/IRON
+                staked_token: STAKED-SLP-USDC/IRON
+    -
         tx_patterns:
             -
                 transaction_type: Trade
@@ -434,17 +493,6 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
-                buy_currency: TITAN
-            -
-                transaction_type: Withdrawal
-                sell_currency: SLP
-        actions:
-            -
-                name: convert_to_trades
-    -
-        tx_patterns:
-            -
-                transaction_type: Deposit
                 buy_currency: DFYNLP
             -
                 transaction_type: Withdrawal
@@ -553,6 +601,16 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: DFYNLP
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: DFYNLP
+                staked_token: STAKED-DFYNLP
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: BULL
             -
                 transaction_type: Deposit
@@ -586,21 +644,6 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
-                buy_currency: TITAN
-            -
-                transaction_type: Deposit
-                buy_currency: SLP
-        actions:
-            -
-                name: remove_containing
-                removes:
-                    - SLP
-            -
-                name: convert_to_staking
-    -
-        tx_patterns:
-            -
-                transaction_type: Deposit
                 buy_currency: WMATIC
             -
                 transaction_type: Deposit
@@ -621,11 +664,32 @@ alterations:
                 buy_currency: PICKLE
         actions:
             -
-                name: remove_containing
-                removes:
-                    - PAM3CRV
+                name: convert_to_stake_migration
+                unstaked_token: PAM3CRV
+                staked_token: STAKED-PAM3CRV
+                rewards:
+                    - WMATIC
+                    - PICKLE
+    -
+        tx_patterns:
             -
-                name: convert_to_staking
+                transaction_type: Withdrawal
+                sell_currency: MOOCURVEATRICRYPTO
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: MOOCURVEATRICRYPTO
+                staked_token: STAKED-MOOCURVEATRICRYPTO
+    -
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: PAM3CRV
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: PAM3CRV
+                staked_token: STAKED-PAM3CRV
     -
         tx_patterns:
             -
@@ -634,6 +698,14 @@ alterations:
             -
                 transaction_type: Deposit
                 buy_currency: PICKLE
+        actions:
+            -
+                name: convert_to_staking
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: BONE
         actions:
             -
                 name: convert_to_staking
@@ -856,6 +928,21 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: TITAN
+            -
+                transaction_type: Withdrawal
+                sell_currency: SLP
+        actions:
+            -
+                name: keep_only_types
+                keeps:
+                    - Deposit
+            -
+                name: convert_to_staking
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: IRON
             -
                 transaction_type: Withdrawal
@@ -996,6 +1083,10 @@ alterations:
                 sell_currency: DFYNLP
         actions:
             -
+                name: rename_to
+                token_name: DFYNLP
+                rename_to: DFYNLP-DAI/USDT
+            -
                 name: convert_to_trades
     -
         tx_patterns:
@@ -1009,6 +1100,10 @@ alterations:
                 transaction_type: Withdrawal
                 sell_currency: USDT
         actions:
+            -
+                name: rename_to
+                token_name: DFYNLP
+                rename_to: DFYNLP-DAI/USDT
             -
                 name: convert_to_trades
     -

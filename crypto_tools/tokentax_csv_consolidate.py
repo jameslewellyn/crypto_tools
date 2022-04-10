@@ -335,7 +335,11 @@ class AlterationActionConvertToSingleStakeTrades(BaseModel):
         stake_migration_transaction_list: List[TokenTaxTransaction] = list()
         for transaction in transaction_list:
             if transaction.buy_currency == self.unstaked_token:
-                raise Exception("Found transaction type other than Withdrawal when converting to Single Stake Trade.")
+                modified_transaction = copy.deepcopy(transaction)
+                modified_transaction.transaction_type = TokenTaxTransactionType.TRADE
+                modified_transaction.sell_amount = modified_transaction.buy_amount
+                modified_transaction.sell_currency = self.staked_token
+                stake_migration_transaction_list.append(modified_transaction)
             elif transaction.sell_currency == self.unstaked_token:
                 modified_transaction = copy.deepcopy(transaction)
                 modified_transaction.transaction_type = TokenTaxTransactionType.TRADE
@@ -649,6 +653,7 @@ AlterationActionUnion = Annotated[
 class Alteration(BaseModel):
     """PyDantic class schema for sets of before and after transaction pattern lists."""
 
+    tx_hash: Optional[str]
     tx_patterns: List[AlterationTransactionPattern]
     actions: List[AlterationActionUnion]
 
@@ -664,14 +669,14 @@ def compare_tokentax_transaction_to_alteration_tx_pattern(
     alteration_transaction_pattern: AlterationTransactionPattern,
 ) -> bool:
     """Compare two objects for equality."""
-    logger.debug("tx type: %s", tokentax_transaction.transaction_type.value)
-    logger.debug("tx buyc: %s", tokentax_transaction.buy_currency)
-    logger.debug("tx sellc: %s", tokentax_transaction.sell_currency)
-    logger.debug("tx exchange: %s", tokentax_transaction.exchange)
-    logger.debug("alt type: %s", alteration_transaction_pattern.transaction_type)
-    logger.debug("alt buyc: %s", alteration_transaction_pattern.buy_currency)
-    logger.debug("alt sellc: %s", alteration_transaction_pattern.sell_currency)
-    logger.debug("alt exchange: %s", alteration_transaction_pattern.exchange)
+    # logger.debug("tx type: %s", tokentax_transaction.transaction_type.value)
+    # logger.debug("tx buyc: %s", tokentax_transaction.buy_currency)
+    # logger.debug("tx sellc: %s", tokentax_transaction.sell_currency)
+    # logger.debug("tx exchange: %s", tokentax_transaction.exchange)
+    # logger.debug("alt type: %s", alteration_transaction_pattern.transaction_type)
+    # logger.debug("alt buyc: %s", alteration_transaction_pattern.buy_currency)
+    # logger.debug("alt sellc: %s", alteration_transaction_pattern.sell_currency)
+    # logger.debug("alt exchange: %s", alteration_transaction_pattern.exchange)
     common_elements: int = 0
     if alteration_transaction_pattern.transaction_type is not None:
         if tokentax_transaction.transaction_type.value == alteration_transaction_pattern.transaction_type:
@@ -734,11 +739,14 @@ def all_transactions_in_tx_pattern_list(
 
 def match_transaction_list_to_alteration(
     alterations_mapping: AlterationsMapping,
+    transaction_hash: str,
     transaction_list: List[TokenTaxTransaction],
 ) -> Optional[Alteration]:
     """Return an alteration pattern if possible for the given transaction list."""
     transaction_list_length = len(transaction_list)
     for alteration in alterations_mapping.alterations:
+        if alteration.tx_hash is not None and transaction_hash != alteration.tx_hash:
+            continue
         if len(alteration.tx_patterns) == transaction_list_length:
             if all_transactions_in_tx_pattern_list(transaction_list, alteration.tx_patterns):
                 logger.debug("Found alteration matching input transaction: %r", alteration)
@@ -828,7 +836,11 @@ def main() -> None:
         if same_transaction_hash_count not in input_transaction_hash_count_dict:
             input_transaction_hash_count_dict[same_transaction_hash_count] = 0
         input_transaction_hash_count_dict[same_transaction_hash_count] += 1
-        alteration = match_transaction_list_to_alteration(alterations_mapping, separated_transaction_list)
+        alteration = match_transaction_list_to_alteration(
+            alterations_mapping,
+            transaction_hash,
+            separated_transaction_list,
+        )
         if alteration is not None:
             if same_transaction_hash_count not in output_transaction_hash_count_dict:
                 output_transaction_hash_count_dict[same_transaction_hash_count] = 0
