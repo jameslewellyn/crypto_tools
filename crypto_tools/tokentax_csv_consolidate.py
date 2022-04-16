@@ -84,7 +84,7 @@ class TokenTaxTransaction:
     updated_at: datetime
 
     @staticmethod
-    def create_from_transaction_dict(transaction_dict: Dict[str, str]) -> TokenTaxTransaction:
+    def create_from_transaction_string_dictionary(transaction_dict: Dict[str, str]) -> TokenTaxTransaction:
         """Initialize transaction from csv DictReader row."""
         return TokenTaxTransaction(
             TokenTaxTransactionType(transaction_dict["Type"]),
@@ -100,9 +100,29 @@ class TokenTaxTransaction:
             transaction_dict["Import"],
             transaction_dict["Comment"],
             datetime.strptime(transaction_dict["Date"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-            Decimal(locale.atof(transaction_dict["USDEquivalent"].strip(currency_symbol))),
+            Decimal(transaction_dict["USDEquivalent"].strip(currency_symbol).replace(",", "")),
             datetime.strptime(transaction_dict["UpdatedAt"], "%Y-%m-%dT%H:%M:%S.%fZ"),
         )
+
+    def export_as_string_dictionary(self: TokenTaxTransaction) -> Dict[str, str]:
+        """Export as a dictionary of strings so that is can be written to the CSV."""
+        export_dictionary: Dict[str, str] = dict()
+        export_dictionary["Type"] = self.transaction_type.value
+        export_dictionary["BuyAmount"] = str(self.buy_amount)
+        export_dictionary["BuyCurrency"] = self.buy_currency
+        export_dictionary["SellAmount"] = str(self.sell_amount)
+        export_dictionary["SellCurrency"] = self.sell_currency
+        export_dictionary["FeeAmount"] = str(self.fee_amount)
+        export_dictionary["FeeCurrency"] = str(self.fee_currency)
+        export_dictionary["Exchange"] = self.exchange
+        export_dictionary["ExchangeId"] = self.exchange_id.transaction_hash
+        export_dictionary["Group"] = self.group
+        export_dictionary["Import"] = self.import_name
+        export_dictionary["Comment"] = self.comment
+        export_dictionary["Date"] = self.date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        export_dictionary["USDEquivalent"] = currency_symbol + str(self.usd_equivalent)
+        export_dictionary["UpdatedAt"] = self.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        return export_dictionary
 
 
 class AlterationTransactionPattern(BaseModel):
@@ -180,7 +200,7 @@ def ensure_common_elements_are_identical_in_transaction_list(transaction_list: L
     ):
         raise Exception("Cannot handle multiple Dates within the same transaction hash.")
     if not all(
-        transaction.updated_at.replace(microsecond=0) == transaction_list[0].updated_at.replace(microsecond=0)
+        abs((transaction.updated_at - transaction_list[0].updated_at).total_seconds()) < 1
         for transaction in transaction_list
     ):
         raise Exception("Cannot handle multiple Updated At Times within the same transaction hash.")
@@ -204,9 +224,11 @@ def separate_buy_from_sell_transactions(
 
 def separate_transactions_by_containing(
     transaction_list: List[TokenTaxTransaction],
-    contains_token_list: Sequence[str],
+    contains_token_list: Optional[Sequence[str]],
 ) -> Tuple[List[TokenTaxTransaction], List[TokenTaxTransaction]]:
     """Create two sublists splitting by transactions with either only a buy or a sell component."""
+    if contains_token_list is None:
+        return ([], transaction_list)
     transactions_containing_list: List[TokenTaxTransaction] = list()
     transactions_without_list: List[TokenTaxTransaction] = list()
     for transaction in transaction_list:
@@ -406,20 +428,27 @@ class AlterationActionConvertToMigrations(BaseModel):
     """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
 
     name: Literal["convert_to_migrations"]
-    rewards: Optional[Sequence[str]]
+    rewards_income: Optional[Sequence[str]]
+    rewards_staking: Optional[Sequence[str]]
 
     def perform_on_transaction_list(
         self: AlterationActionDoNothing,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a migration."""
-        if self.rewards is None:
-            return convert_to_migrations(transaction_list)
-        else:
-            (rewards_list, migration_list) = separate_transactions_by_containing(transaction_list, self.rewards)
-            for rewards_transaction in rewards_list:
-                rewards_transaction.transaction_type = TokenTaxTransactionType.STAKING
-            return rewards_list + convert_to_migrations(migration_list)
+        (rewards_income_list, remaining_transactions_list) = separate_transactions_by_containing(
+            transaction_list,
+            self.rewards_income,
+        )
+        for rewards_income_transaction in rewards_income_list:
+            rewards_income_transaction.transaction_type = TokenTaxTransactionType.INCOME
+        (rewards_staking_list, remaining_transactions_list) = separate_transactions_by_containing(
+            remaining_transactions_list,
+            self.rewards_staking,
+        )
+        for rewards_staking_transaction in rewards_staking_list:
+            rewards_staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
+        return rewards_income_list + rewards_staking_list + convert_to_migrations(remaining_transactions_list)
 
 
 class AlterationActionConvertToStaking(BaseModel):
@@ -441,6 +470,27 @@ class AlterationActionConvertToStaking(BaseModel):
                 staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
                 staking_transaction_list.append(staking_transaction)
         return staking_transaction_list
+
+
+class AlterationActionConvertToIncome(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_to_income"]
+
+    def perform_on_transaction_list(
+        self: AlterationActionDoNothing,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to a Income."""
+        income_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.transaction_type != TokenTaxTransactionType.DEPOSIT:
+                raise Exception("Found transaction type other than Deposit when converting to Income.")
+            else:
+                income_transaction = transaction
+                income_transaction.transaction_type = TokenTaxTransactionType.INCOME
+                income_transaction_list.append(income_transaction)
+        return income_transaction_list
 
 
 def convert_to_stake_migrations(
@@ -474,20 +524,31 @@ class AlterationActionConvertToStakeMigration(BaseModel):
     name: Literal["convert_to_stake_migration"]
     unstaked_token: str
     staked_token: str
-    rewards: Optional[Sequence[str]]
+    rewards_income: Optional[Sequence[str]]
+    rewards_staking: Optional[Sequence[str]]
 
     def perform_on_transaction_list(
         self: AlterationActionDoNothing,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a staking."""
-        if self.rewards is None:
-            return convert_to_stake_migrations(transaction_list, self.unstaked_token, self.staked_token)
-        else:
-            (rewards_list, migration_list) = separate_transactions_by_containing(transaction_list, self.rewards)
-            for rewards_transaction in rewards_list:
-                rewards_transaction.transaction_type = TokenTaxTransactionType.STAKING
-            return rewards_list + convert_to_stake_migrations(migration_list, self.unstaked_token, self.staked_token)
+        (rewards_income_list, remaining_transactions_list) = separate_transactions_by_containing(
+            transaction_list,
+            self.rewards_income,
+        )
+        for rewards_income_transaction in rewards_income_list:
+            rewards_income_transaction.transaction_type = TokenTaxTransactionType.INCOME
+        (rewards_staking_list, remaining_transactions_list) = separate_transactions_by_containing(
+            remaining_transactions_list,
+            self.rewards_staking,
+        )
+        for rewards_staking_transaction in rewards_staking_list:
+            rewards_staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
+        return (
+            rewards_income_list
+            + rewards_staking_list
+            + convert_to_stake_migrations(remaining_transactions_list, self.unstaked_token, self.staked_token)
+        )
 
 
 def keep_transactions_by_type(
@@ -641,6 +702,7 @@ AlterationActionUnion = Annotated[
         AlterationActionConvertToMigrations,
         AlterationActionConvertToStaking,
         AlterationActionConvertToStakeMigration,
+        AlterationActionConvertToIncome,
         AlterationActionKeepOnlyTypes,
         AlterationActionRenameToken,
         AlterationActionRemoveContaining,
@@ -757,7 +819,7 @@ def match_transaction_list_to_alteration(
 
 def quick_print_transactions_same_hash_list(transaction_list: List[TokenTaxTransaction]) -> None:
     """Print important info for easy viewing."""
-    logger.info("---%s", transaction_list[0].exchange_id.transaction_hash)
+    logger.info("--- %s", transaction_list[0].exchange_id.transaction_hash)
     for (i, transaction) in enumerate(transaction_list):
         logger.info(
             "#%d) %s: BUY = %s:%f, SELL = %s:%f",
@@ -815,7 +877,7 @@ def main() -> None:
         for tokentax_transaction_dict in tokentax_transaction_dictreader:
             logger.debug("Transaction CSV: %r", tokentax_transaction_dict)
             transaction_list.append(
-                TokenTaxTransaction.create_from_transaction_dict(tokentax_transaction_dict),
+                TokenTaxTransaction.create_from_transaction_string_dictionary(tokentax_transaction_dict),
             )
 
     separated_transaction_list_of_lists: Dict["str", List[TokenTaxTransaction]] = dict()
@@ -830,8 +892,8 @@ def main() -> None:
     output_transaction_hash_count_dict: Dict[int, int] = dict()
     output_transaction_list: List[TokenTaxTransaction] = list()
     for (transaction_hash, separated_transaction_list) in separated_transaction_list_of_lists.items():
-        logger.info("__________________________________________________")
-        quick_print_transactions_same_hash_list(separated_transaction_list)
+        # logger.info("__________________________________________________")
+        # quick_print_transactions_same_hash_list(separated_transaction_list)
         same_transaction_hash_count = len(separated_transaction_list)
         if same_transaction_hash_count not in input_transaction_hash_count_dict:
             input_transaction_hash_count_dict[same_transaction_hash_count] = 0
@@ -849,13 +911,13 @@ def main() -> None:
             for action in alteration.actions:
                 modified_transaction_list = action.perform_on_transaction_list(modified_transaction_list)
             output_transaction_list += modified_transaction_list
-            quick_print_transactions_same_hash_list(modified_transaction_list)
-        elif same_transaction_hash_count == 1:
-            output_transaction_list.append(separated_transaction_list[0])
-            quick_print_transactions_same_hash_list(separated_transaction_list)
-            if same_transaction_hash_count not in output_transaction_hash_count_dict:
-                output_transaction_hash_count_dict[same_transaction_hash_count] = 0
-            output_transaction_hash_count_dict[same_transaction_hash_count] += 1
+            # quick_print_transactions_same_hash_list(modified_transaction_list)
+        # elif same_transaction_hash_count == 1:
+        # output_transaction_list.append(separated_transaction_list[0])
+        # # quick_print_transactions_same_hash_list(separated_transaction_list)
+        # if same_transaction_hash_count not in output_transaction_hash_count_dict:
+        # output_transaction_hash_count_dict[same_transaction_hash_count] = 0
+        # output_transaction_hash_count_dict[same_transaction_hash_count] += 1
         else:
             if same_transaction_hash_count not in no_match_transaction_hash_count_dict:
                 no_match_transaction_hash_count_dict[same_transaction_hash_count] = 0
@@ -866,7 +928,36 @@ def main() -> None:
                 transaction_hash,
             )
             quick_print_transactions_same_hash_list(separated_transaction_list)
-        logger.info("__________________________________________________")
+            break
+        # logger.info("__________________________________________________")
+
+    with output_tokentax_csv_file_path.open("w") as output_tokentax_csv_file:
+        csv_field_names = [
+            "Type",
+            "BuyAmount",
+            "BuyCurrency",
+            "SellAmount",
+            "SellCurrency",
+            "FeeAmount",
+            "FeeCurrency",
+            "Exchange",
+            "ExchangeId",
+            "Group",
+            "Import",
+            "Comment",
+            "Date",
+            "USDEquivalent",
+            "UpdatedAt",
+        ]
+        output_tokentax_csv_writer = csv.DictWriter(
+            output_tokentax_csv_file,
+            fieldnames=csv_field_names,
+            quoting=csv.QUOTE_ALL,
+        )
+        output_tokentax_csv_writer.writeheader()
+        for output_transaction in sorted(output_transaction_list, key=lambda x: x.date):
+            logger.debug(output_transaction)
+            output_tokentax_csv_writer.writerow(output_transaction.export_as_string_dictionary())
 
     # logger.info("")
     logger.info("------------------------")
