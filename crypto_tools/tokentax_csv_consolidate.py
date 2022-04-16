@@ -715,7 +715,7 @@ AlterationActionUnion = Annotated[
 class Alteration(BaseModel):
     """PyDantic class schema for sets of before and after transaction pattern lists."""
 
-    tx_hash: Optional[str]
+    tx_hashes: Optional[Sequence[str]]
     tx_patterns: List[AlterationTransactionPattern]
     actions: List[AlterationActionUnion]
 
@@ -807,7 +807,7 @@ def match_transaction_list_to_alteration(
     """Return an alteration pattern if possible for the given transaction list."""
     transaction_list_length = len(transaction_list)
     for alteration in alterations_mapping.alterations:
-        if alteration.tx_hash is not None and transaction_hash != alteration.tx_hash:
+        if alteration.tx_hashes is not None and transaction_hash not in alteration.tx_hashes:
             continue
         if len(alteration.tx_patterns) == transaction_list_length:
             if all_transactions_in_tx_pattern_list(transaction_list, alteration.tx_patterns):
