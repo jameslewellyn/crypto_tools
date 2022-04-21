@@ -342,37 +342,6 @@ class AlterationActionConvertToTrades(BaseModel):
         return convert_to_trades(transaction_list)
 
 
-class AlterationActionConvertToSingleStakeTrades(BaseModel):
-    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
-
-    name: Literal["convert_to_single_stake_trades"]
-    unstaked_token: str
-    staked_token: str
-
-    def perform_on_transaction_list(
-        self: AlterationActionConvertToSingleStakeTrades,
-        transaction_list: List[TokenTaxTransaction],
-    ) -> List[TokenTaxTransaction]:
-        """Convert transactions to list of trades."""
-        stake_migration_transaction_list: List[TokenTaxTransaction] = list()
-        for transaction in transaction_list:
-            if transaction.buy_currency == self.unstaked_token:
-                modified_transaction = copy.deepcopy(transaction)
-                modified_transaction.transaction_type = TokenTaxTransactionType.TRADE
-                modified_transaction.sell_amount = modified_transaction.buy_amount
-                modified_transaction.sell_currency = self.staked_token
-                stake_migration_transaction_list.append(modified_transaction)
-            elif transaction.sell_currency == self.unstaked_token:
-                modified_transaction = copy.deepcopy(transaction)
-                modified_transaction.transaction_type = TokenTaxTransactionType.TRADE
-                modified_transaction.buy_amount = modified_transaction.sell_amount
-                modified_transaction.buy_currency = self.staked_token
-                stake_migration_transaction_list.append(modified_transaction)
-            else:
-                stake_migration_transaction_list.append(transaction)
-        return stake_migration_transaction_list
-
-
 def convert_to_migrations(
     transaction_list: List[TokenTaxTransaction],
 ) -> List[TokenTaxTransaction]:
@@ -493,35 +462,85 @@ class AlterationActionConvertToIncome(BaseModel):
         return income_transaction_list
 
 
-def convert_to_stake_migrations(
+def convert_to_stake_with_new_type(
     transaction_list: List[TokenTaxTransaction],
     unstaked_token: str,
     staked_token: str,
+    new_transaction_type: TokenTaxTransactionType,
 ) -> List[TokenTaxTransaction]:
     """P yDantic class schema for actions to be taken, in order, on the list of transactions."""
-    stake_migration_transaction_list: List[TokenTaxTransaction] = list()
+    stake_transaction_list: List[TokenTaxTransaction] = list()
     for transaction in transaction_list:
         if (
             transaction.transaction_type == TokenTaxTransactionType.DEPOSIT
             and transaction.buy_currency == unstaked_token
         ):
             modified_transaction = copy.deepcopy(transaction)
-            modified_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
+            modified_transaction.transaction_type = new_transaction_type
             modified_transaction.sell_amount = modified_transaction.buy_amount
             modified_transaction.sell_currency = staked_token
-            stake_migration_transaction_list.append(modified_transaction)
+            stake_transaction_list.append(modified_transaction)
         elif (
             transaction.transaction_type == TokenTaxTransactionType.WITHDRAWAL
             and transaction.sell_currency == unstaked_token
         ):
             modified_transaction = copy.deepcopy(transaction)
-            modified_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
+            modified_transaction.transaction_type = new_transaction_type
             modified_transaction.buy_amount = modified_transaction.sell_amount
             modified_transaction.buy_currency = staked_token
-            stake_migration_transaction_list.append(modified_transaction)
+            stake_transaction_list.append(modified_transaction)
         else:
-            stake_migration_transaction_list.append(transaction)
-    return stake_migration_transaction_list
+            stake_transaction_list.append(transaction)
+    return stake_transaction_list
+
+
+class AlterationActionConvertToStakeTrade(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_to_stake_trade"]
+    unstaked_token: str
+    staked_token: str
+    rewards_income: Optional[Sequence[str]]
+    rewards_staking: Optional[Sequence[str]]
+
+    def perform_on_transaction_list(
+        self: AlterationActionConvertToStakeTrade,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to list of trades."""
+        rewards_output_transaction_list: List[TokenTaxTransaction] = list()
+        (rewards_income_list, remaining_transactions_list) = separate_transactions_by_containing(
+            transaction_list,
+            self.rewards_income,
+        )
+        for rewards_income_transaction in rewards_income_list:
+            if rewards_income_transaction.transaction_type == TokenTaxTransactionType.INCOME:
+                rewards_output_transaction_list.append(rewards_income_transaction)
+            elif rewards_income_transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
+                rewards_income_transaction.transaction_type = TokenTaxTransactionType.INCOME
+                rewards_output_transaction_list.append(rewards_income_transaction)
+            else:
+                # logger.error("INCOME REWARD NOT DESPOSIT: %r", rewards_income_transaction)
+                remaining_transactions_list.append(rewards_income_transaction)
+        (rewards_staking_list, remaining_transactions_list) = separate_transactions_by_containing(
+            remaining_transactions_list,
+            self.rewards_staking,
+        )
+        for rewards_staking_transaction in rewards_staking_list:
+            if rewards_staking_transaction.transaction_type == TokenTaxTransactionType.STAKING:
+                rewards_output_transaction_list.append(rewards_staking_transaction)
+            elif rewards_staking_transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
+                rewards_staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
+                rewards_output_transaction_list.append(rewards_staking_transaction)
+            else:
+                # logger.error("STAKING REWARD NOT DESPOSIT: %r", rewards_income_transaction)
+                remaining_transactions_list.append(rewards_staking_transaction)
+        return rewards_output_transaction_list + convert_to_stake_with_new_type(
+            remaining_transactions_list,
+            self.unstaked_token,
+            self.staked_token,
+            TokenTaxTransactionType.TRADE,
+        )
 
 
 class AlterationActionConvertToStakeMigration(BaseModel):
@@ -538,15 +557,17 @@ class AlterationActionConvertToStakeMigration(BaseModel):
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a staking."""
+        rewards_output_transaction_list: List[TokenTaxTransaction] = list()
         (rewards_income_list, remaining_transactions_list) = separate_transactions_by_containing(
             transaction_list,
             self.rewards_income,
         )
         for rewards_income_transaction in rewards_income_list:
             if rewards_income_transaction.transaction_type == TokenTaxTransactionType.INCOME:
-                pass
+                rewards_output_transaction_list.append(rewards_income_transaction)
             elif rewards_income_transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
                 rewards_income_transaction.transaction_type = TokenTaxTransactionType.INCOME
+                rewards_output_transaction_list.append(rewards_income_transaction)
             else:
                 # logger.error("INCOME REWARD NOT DESPOSIT: %r", rewards_income_transaction)
                 remaining_transactions_list.append(rewards_income_transaction)
@@ -556,16 +577,18 @@ class AlterationActionConvertToStakeMigration(BaseModel):
         )
         for rewards_staking_transaction in rewards_staking_list:
             if rewards_staking_transaction.transaction_type == TokenTaxTransactionType.STAKING:
-                pass
+                rewards_output_transaction_list.append(rewards_staking_transaction)
             elif rewards_staking_transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
                 rewards_staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
+                rewards_output_transaction_list.append(rewards_staking_transaction)
             else:
                 # logger.error("STAKING REWARD NOT DESPOSIT: %r", rewards_income_transaction)
                 remaining_transactions_list.append(rewards_staking_transaction)
-        return (
-            rewards_income_list
-            + rewards_staking_list
-            + convert_to_stake_migrations(remaining_transactions_list, self.unstaked_token, self.staked_token)
+        return rewards_output_transaction_list + convert_to_stake_with_new_type(
+            remaining_transactions_list,
+            self.unstaked_token,
+            self.staked_token,
+            TokenTaxTransactionType.MIGRATION,
         )
 
 
@@ -716,7 +739,7 @@ AlterationActionUnion = Annotated[
     Union[
         AlterationActionDoNothing,
         AlterationActionConvertToTrades,
-        AlterationActionConvertToSingleStakeTrades,
+        AlterationActionConvertToStakeTrade,
         AlterationActionConvertToMigrations,
         AlterationActionConvertToStaking,
         AlterationActionConvertToStakeMigration,
