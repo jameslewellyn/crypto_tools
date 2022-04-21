@@ -335,7 +335,7 @@ class AlterationActionConvertToTrades(BaseModel):
     name: Literal["convert_to_trades"]
 
     def perform_on_transaction_list(
-        self: AlterationActionDoNothing,
+        self: AlterationActionConvertToTrades,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to list of trades."""
@@ -350,7 +350,7 @@ class AlterationActionConvertToSingleStakeTrades(BaseModel):
     staked_token: str
 
     def perform_on_transaction_list(
-        self: AlterationActionDoNothing,
+        self: AlterationActionConvertToSingleStakeTrades,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to list of trades."""
@@ -432,7 +432,7 @@ class AlterationActionConvertToMigrations(BaseModel):
     rewards_staking: Optional[Sequence[str]]
 
     def perform_on_transaction_list(
-        self: AlterationActionDoNothing,
+        self: AlterationActionConvertToMigrations,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a migration."""
@@ -457,7 +457,7 @@ class AlterationActionConvertToStaking(BaseModel):
     name: Literal["convert_to_staking"]
 
     def perform_on_transaction_list(
-        self: AlterationActionDoNothing,
+        self: AlterationActionConvertToStaking,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a staking."""
@@ -478,7 +478,7 @@ class AlterationActionConvertToIncome(BaseModel):
     name: Literal["convert_to_income"]
 
     def perform_on_transaction_list(
-        self: AlterationActionDoNothing,
+        self: AlterationActionConvertToIncome,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a Income."""
@@ -501,13 +501,19 @@ def convert_to_stake_migrations(
     """P yDantic class schema for actions to be taken, in order, on the list of transactions."""
     stake_migration_transaction_list: List[TokenTaxTransaction] = list()
     for transaction in transaction_list:
-        if transaction.buy_currency == unstaked_token:
+        if (
+            transaction.transaction_type == TokenTaxTransactionType.DEPOSIT
+            and transaction.buy_currency == unstaked_token
+        ):
             modified_transaction = copy.deepcopy(transaction)
             modified_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
             modified_transaction.sell_amount = modified_transaction.buy_amount
             modified_transaction.sell_currency = staked_token
             stake_migration_transaction_list.append(modified_transaction)
-        elif transaction.sell_currency == unstaked_token:
+        elif (
+            transaction.transaction_type == TokenTaxTransactionType.WITHDRAWAL
+            and transaction.sell_currency == unstaked_token
+        ):
             modified_transaction = copy.deepcopy(transaction)
             modified_transaction.transaction_type = TokenTaxTransactionType.MIGRATION
             modified_transaction.buy_amount = modified_transaction.sell_amount
@@ -528,7 +534,7 @@ class AlterationActionConvertToStakeMigration(BaseModel):
     rewards_staking: Optional[Sequence[str]]
 
     def perform_on_transaction_list(
-        self: AlterationActionDoNothing,
+        self: AlterationActionConvertToStakeMigration,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a staking."""
@@ -537,13 +543,25 @@ class AlterationActionConvertToStakeMigration(BaseModel):
             self.rewards_income,
         )
         for rewards_income_transaction in rewards_income_list:
-            rewards_income_transaction.transaction_type = TokenTaxTransactionType.INCOME
+            if rewards_income_transaction.transaction_type == TokenTaxTransactionType.INCOME:
+                pass
+            elif rewards_income_transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
+                rewards_income_transaction.transaction_type = TokenTaxTransactionType.INCOME
+            else:
+                # logger.error("INCOME REWARD NOT DESPOSIT: %r", rewards_income_transaction)
+                remaining_transactions_list.append(rewards_income_transaction)
         (rewards_staking_list, remaining_transactions_list) = separate_transactions_by_containing(
             remaining_transactions_list,
             self.rewards_staking,
         )
         for rewards_staking_transaction in rewards_staking_list:
-            rewards_staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
+            if rewards_staking_transaction.transaction_type == TokenTaxTransactionType.STAKING:
+                pass
+            elif rewards_staking_transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
+                rewards_staking_transaction.transaction_type = TokenTaxTransactionType.STAKING
+            else:
+                # logger.error("STAKING REWARD NOT DESPOSIT: %r", rewards_income_transaction)
+                remaining_transactions_list.append(rewards_staking_transaction)
         return (
             rewards_income_list
             + rewards_staking_list
@@ -588,7 +606,7 @@ class AlterationActionRenameToken(BaseModel):
     rename_to: str
 
     def perform_on_transaction_list(
-        self: AlterationActionKeepOnlyTypes,
+        self: AlterationActionRenameToken,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Remove all transactions except listed types."""
@@ -625,7 +643,7 @@ class AlterationActionMergeSameCurrency(BaseModel):
     merge_currency: str
 
     def perform_on_transaction_list(
-        self: AlterationActionRemoveContaining,
+        self: AlterationActionMergeSameCurrency,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Remove all transactions except listed types."""

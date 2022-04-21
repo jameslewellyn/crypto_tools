@@ -1,7 +1,5 @@
 alterations:
     -
-        tx_hashes:
-            - "0x07a4641d75d1e5d8360127e53746c0d13a8b7e65b7f62370038e54875bb2c160"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -11,6 +9,26 @@ alterations:
                 name: remove_containing
                 removes:
                     - "BUY POLYDOGE"
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: "🐶🚀🐈-4368"
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - "🐶🚀🐈-4368"
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: "READ NAME"
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - "READ NAME"
     -
         tx_hashes:
             - "0x1283da472981eb4141fd053fc767751a759062c7ceccf29d09a9f671f3f857df"
@@ -313,6 +331,25 @@ alterations:
                 name: convert_to_single_stake_trades
                 unstaked_token: UNI-V2-USDC/MOON
                 staked_token: STAKED-UNI-V2-USDC/MOON
+    -
+        tx_hashes:
+            - "0xc5a459ccd8986f0722d611fca8e950b1b6cf2f9e19c560994d83e6ce5a375e1a"
+            - "0x443b243d3e857ab5e9e0343033736b4bd452c4dab0ae491260bdab122dba29bf"
+            - "0xf1fcd04894fd0f0860060a31d1763f4b95bca7d01a57161ac9a9b3a439840e37"
+            - "0xf9d179d5fd1ed939bca3e5e88a9360491dd9fb7bc24f4a8fa21d079647a81f57"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-USDC/FISH
+            -
+                name: convert_to_single_stake_trades
+                unstaked_token: UNI-V2-USDC/FISH
+                staked_token: STAKED-UNI-V2-USDC/FISH
     -
         tx_hashes:
             - "0xb882be4088e56a3d06d55a252b50c8b77045b8074474ffb4937b83d0f65d12fa"
@@ -933,17 +970,6 @@ alterations:
                 name: convert_to_income
     -
         tx_hashes:
-            - "0x2991d22af46a255fb47304953657e88faff9eeeaa7c109f3eecaf727711ad1e1"
-            - "0x715786b4d3dff3a5b3605d3448dcc02fbad283988de5a87bd5dbc6ec3f0330ba"
-        tx_patterns:
-            -
-                transaction_type: Deposit
-                buy_currency: FISH
-        actions:
-            -
-                name: convert_to_income
-    -
-        tx_hashes:
             - "0x95e61d38edaa4355b1f5771529b4bc5441b89f1eff418e5fd2fba108108f4563"
             - "0xa4a7a70602eee54dcbe8983627d912f8ac14725772523b4aaf7751f5f22d19ab"
             - "0xff21cb16fb32ee29cf8df1c05938db97862f15c958d689a5daa450bf4cd1a120"
@@ -1174,6 +1200,63 @@ alterations:
                 unstaked_token: FISH
                 staked_token: SINGLE-STAKE-FISH
     -
+        tx_hashes:
+            - "0x2991d22af46a255fb47304953657e88faff9eeeaa7c109f3eecaf727711ad1e1"
+            - "0x715786b4d3dff3a5b3605d3448dcc02fbad283988de5a87bd5dbc6ec3f0330ba"
+            - "0xa400ad4313c8246c82f93063f4e6a359762b49aa19e0b87c4c2084b2bcec6b68"
+            - "0x8c8c4e8bdbb22bbc7372427a4da835ab1614503efb2e40344ddc966b5ae672cc"
+            - "0xa3bf464379a3ff8a8fa3834464556d076b32947f4951c0c10a6771884f909b6b"
+            - "0x4541706ef0181bc238b3c9b5543538757cb639cdb5eecf47decd219ddcca9ad0"
+            - "0x7210a921917dab32dd95c3ed517c0fe553391411a4ec19f1b817ad08c8bb7001"
+            - "0xc0a36dacf9a345ffbd721c0dab96d26511e37c12a6972021377824d7ded801d0"
+            - "0xbd6774ae792182eb72b46ccbe3c96bc08bba9aea89f576b0c839d10b006eb274"
+            - "0x9a14a75e5d1ef2f25a914cb55adf943f085ad4850875aadb93094b48dd387138"
+            - "0x2e6f1ade82f370db3ff2fbbf6118a841faf7524607313022e3b9004e908c3808"
+            - "0x098f5820c4990e80af81b67e9451b261f2b747459bfa70b8617884b7ea8b6caf"
+            - "0xb60581b05a4096ad5b9a73505ffa68b97de4e62817f5da2b5fc4f49d728d7e65"
+            - "0x957a268962dad6ce288990d598238a9693b6fa60e53bce10b3b44e48e44ffcca"
+            - "0xacf848a34d573045b59cab4d3187efc9e4fef8d68fe1a6bb6f0ccce96ebf4a75"
+            - "0x9a8360e2f6776371daa0241e0659a01f907af5c949fdb0b856587c2fb093a8c5"
+            - "0x49f36765333185cf129b0288ee775c67b910595e6f3b6685a96033d16b830c4d"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: FISH
+        actions:
+            -
+                name: convert_to_income
+    -
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: FISH
+            -
+                transaction_type: Deposit
+                buy_currency: FISH
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: FISH
+                staked_token: SINGLE-STAKE-FISH
+                rewards_income:
+                    - FISH
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: FISH
+            -
+                transaction_type: Deposit
+                buy_currency: FISH
+        actions:
+            -
+                name: merge_same_currency
+                merge_currency: FISH
+            -
+                name: convert_to_stake_migration
+                unstaked_token: FISH
+                staked_token: SINGLE-STAKE-FISH
+    -
         tx_patterns:
             -
                 transaction_type: Withdrawal
@@ -1306,6 +1389,17 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: WETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: FISH
         actions:
             -
                 name: convert_to_trades
@@ -1542,6 +1636,24 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: UNI-V2-MATIC/WETH
+        actions:
+            -
+                name: keep_only_types
+                keeps:
+                    - Trade
+    -
+        tx_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: UNI-V2-USDC/FISH
+                sell_currency: USDC
+            -
+                transaction_type: Trade
+                buy_currency: UNI-V2-USDC/FISH
+                sell_currency: FISH
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2-USDC/FISH
         actions:
             -
                 name: keep_only_types
