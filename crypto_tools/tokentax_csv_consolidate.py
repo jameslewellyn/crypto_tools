@@ -165,18 +165,11 @@ def find_fees_from_transaction_list(transaction_list: List[TokenTaxTransaction])
 
 def find_usd_equivalent_from_transaction_list(transaction_list: List[TokenTaxTransaction]) -> Decimal:
     """Find USD equivalent if any from transaction list."""
-    has_usd_equivalent_list: List[TokenTaxTransaction] = list()
+    total_usd_equivalent = Decimal()
     for transaction in transaction_list:
         if transaction.usd_equivalent != "" and transaction.usd_equivalent != 0.0:
-            has_usd_equivalent_list.append(transaction)
-    has_usd_equivalent_list_length = len(has_usd_equivalent_list)
-    if has_usd_equivalent_list_length == 0:
-        return Decimal()
-    elif has_usd_equivalent_list_length == 1:
-        usd_equivalent_transaction = has_usd_equivalent_list[0]
-        return usd_equivalent_transaction.usd_equivalent
-    else:
-        raise Exception("Cannot handle multiple sources of USD Equivalent within the same transaction hash.")
+            total_usd_equivalent += transaction.usd_equivalent
+    return total_usd_equivalent
 
 
 def ensure_common_elements_are_identical_in_transaction_list(transaction_list: List[TokenTaxTransaction]) -> None:
@@ -476,6 +469,24 @@ class AlterationActionConvertDepositsToIncomes(BaseModel):
         for transaction in transaction_list:
             if transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
                 transaction.transaction_type = TokenTaxTransactionType.INCOME
+            output_transaction_list.append(transaction)
+        return output_transaction_list
+
+
+class AlterationActionConvertDepositsToBorrows(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_deposits_to_borrows"]
+
+    def perform_on_transaction_list(
+        self: AlterationActionConvertDepositsToIncomes,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to a Borrow."""
+        output_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
+                transaction.transaction_type = TokenTaxTransactionType.BORROW
             output_transaction_list.append(transaction)
         return output_transaction_list
 
@@ -820,6 +831,7 @@ AlterationActionUnion = Annotated[
         AlterationActionConvertToStaking,
         AlterationActionConvertToStakeMigration,
         AlterationActionConvertDepositsToIncomes,
+        AlterationActionConvertDepositsToBorrows,
         AlterationActionConvertToAirdrop,
         AlterationActionConvertDepositToTrade,
         AlterationActionConvertWithdrawalToTrade,
@@ -1048,7 +1060,7 @@ def main() -> None:
                 transaction_hash,
             )
             quick_print_transactions_same_hash_list(separated_transaction_list)
-            break
+            # break
         # logger.info("__________________________________________________")
 
     with output_tokentax_csv_file_path.open("w") as output_tokentax_csv_file:
