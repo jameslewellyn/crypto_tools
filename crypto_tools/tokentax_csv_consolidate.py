@@ -441,25 +441,43 @@ class AlterationActionConvertToStaking(BaseModel):
         return staking_transaction_list
 
 
-class AlterationActionConvertToIncome(BaseModel):
+class AlterationActionConvertToAirdrop(BaseModel):
     """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
 
-    name: Literal["convert_to_income"]
+    name: Literal["convert_to_airdrop"]
 
     def perform_on_transaction_list(
-        self: AlterationActionConvertToIncome,
+        self: AlterationActionConvertDepositsToIncomes,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to a Airdrop."""
+        airdrop_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.transaction_type != TokenTaxTransactionType.DEPOSIT:
+                raise Exception("Found transaction type other than Deposit when converting to Airdrop.")
+            else:
+                airdrop_transaction = transaction
+                airdrop_transaction.transaction_type = TokenTaxTransactionType.AIRDROP
+                airdrop_transaction_list.append(airdrop_transaction)
+        return airdrop_transaction_list
+
+
+class AlterationActionConvertDepositsToIncomes(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_deposits_to_incomes"]
+
+    def perform_on_transaction_list(
+        self: AlterationActionConvertDepositsToIncomes,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
         """Convert transactions to a Income."""
-        income_transaction_list: List[TokenTaxTransaction] = list()
+        output_transaction_list: List[TokenTaxTransaction] = list()
         for transaction in transaction_list:
-            if transaction.transaction_type != TokenTaxTransactionType.DEPOSIT:
-                raise Exception("Found transaction type other than Deposit when converting to Income.")
-            else:
-                income_transaction = transaction
-                income_transaction.transaction_type = TokenTaxTransactionType.INCOME
-                income_transaction_list.append(income_transaction)
-        return income_transaction_list
+            if transaction.transaction_type == TokenTaxTransactionType.DEPOSIT:
+                transaction.transaction_type = TokenTaxTransactionType.INCOME
+            output_transaction_list.append(transaction)
+        return output_transaction_list
 
 
 def convert_to_stake_with_new_type(
@@ -659,6 +677,64 @@ class AlterationActionRemoveContaining(BaseModel):
         return updated_transaction_list
 
 
+class HalfTradeDeposit(BaseModel):
+    """PyDantic class schema for addable withdrawal transactions."""
+
+    buy_amount: Decimal
+    buy_currency: str
+
+
+class HalfTradeWithdrawal(BaseModel):
+    """PyDantic class schema for addable withdrawal transactions."""
+
+    sell_amount: Decimal
+    sell_currency: str
+
+
+class AlterationActionConvertDepositToTrade(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_deposit_to_trade"]
+    withdrawal: HalfTradeWithdrawal
+
+    def perform_on_transaction_list(
+        self: AlterationActionRemoveContaining,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Add a new transaction to the list."""
+        deposit_list = [t for t in transaction_list if t.transaction_type == TokenTaxTransactionType.DEPOSIT]
+        non_deposit_list = [t for t in transaction_list if t.transaction_type != TokenTaxTransactionType.DEPOSIT]
+        if len(deposit_list) != 1:
+            raise Exception("Cannot convert deposit to trade with more than 1 Deposit transaction in list.")
+        completed_transaction = deposit_list[0]
+        completed_transaction.transaction_type = TokenTaxTransactionType.TRADE
+        completed_transaction.sell_amount = self.withdrawal.sell_amount
+        completed_transaction.sell_currency = self.withdrawal.sell_currency
+        return non_deposit_list + [completed_transaction]
+
+
+class AlterationActionConvertWithdrawalToTrade(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_withdrawal_to_trade"]
+    deposit: HalfTradeDeposit
+
+    def perform_on_transaction_list(
+        self: AlterationActionRemoveContaining,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Add a new transaction to the list."""
+        withdrawal_list = [t for t in transaction_list if t.transaction_type == TokenTaxTransactionType.WITHDRAWAL]
+        non_withdrawal_list = [t for t in transaction_list if t.transaction_type != TokenTaxTransactionType.WITHDRAWAL]
+        if len(withdrawal_list) != 1:
+            raise Exception("Cannot convert withdrawal to trade with more than 1 Withdrawal transaction in list.")
+        completed_transaction = withdrawal_list[0]
+        completed_transaction.transaction_type = TokenTaxTransactionType.TRADE
+        completed_transaction.buy_amount = self.deposit.buy_amount
+        completed_transaction.buy_currency = self.deposit.buy_currency
+        return non_withdrawal_list + [completed_transaction]
+
+
 class AlterationActionMergeSameCurrency(BaseModel):
     """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
 
@@ -743,7 +819,10 @@ AlterationActionUnion = Annotated[
         AlterationActionConvertToMigrations,
         AlterationActionConvertToStaking,
         AlterationActionConvertToStakeMigration,
-        AlterationActionConvertToIncome,
+        AlterationActionConvertDepositsToIncomes,
+        AlterationActionConvertToAirdrop,
+        AlterationActionConvertDepositToTrade,
+        AlterationActionConvertWithdrawalToTrade,
         AlterationActionKeepOnlyTypes,
         AlterationActionRenameToken,
         AlterationActionRemoveContaining,
