@@ -71,6 +71,16 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: CMVT-94
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - CMVT-94
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: MMTV-8206
         actions:
             -
@@ -610,6 +620,39 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: ADDY
+            -
+                transaction_type: Withdrawal
+                sell_currency: MATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: WMATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: ADDY
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: ADDY
+            -
+                transaction_type: Withdrawal
+                sell_currency: ELE
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: IRON
             -
                 transaction_type: Withdrawal
@@ -665,6 +708,7 @@ alterations:
             - "0xa81a19d53c1ac2c12874b01ecc3824d248805059e129b32323b73a8a84f2cca7"
             - "0x92589d209796f36c7c2dd9cd4bb705b595c082917244375a7ba887ad030ea297"
             - "0x35aba54c728bab28dfb3d4db9965ca9a76ec1f12b81fd84f5e3e19fb52b61113"
+            - "0xe56fcb22dfcdf94d020e984905a9a9b41130495a2e62d66a3587c051cba39bb6"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -1633,6 +1677,7 @@ alterations:
     -
         tx_hashes:
             - "0x7cddb3b3f28d0825aed99cc2123e3f71375d8ec9da3d20a328586475a0be7c54"
+            - "0x522cee16136c717a19afbced9208ebfdd67e0c668ba3347de430e1a77abcbbfe"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2262,6 +2307,7 @@ alterations:
     -
         tx_hashes:
             - "0xf67dc4a65a32fe6d2eeed566ec7e460055c71922096b31b6b665c2a808e75798"
+            - "0x6894e9a41b3c8e2d6f248f9b5dbd806a42c5a404dc42b0af8343f1687fe69403"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2274,6 +2320,7 @@ alterations:
     -
         tx_hashes:
             - "0xb99302d24ceaae88a6a8cf21286890842a4609126559817126c216b32f91653c"
+            - "0x402771c1101578f95527c3a990986acb4320dc4e3e69c036f458e557117e2f6a"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2320,6 +2367,8 @@ alterations:
             - "0x374a5eca1f6ff1047350c432d449842d5da2c9749a6f200fe006cde66cc21061"
             - "0x124b3df22929a14cce6c941f54c3027af8826be91d51698d09d00970e0613a2c"
             - "0xcd3598b6141258a9b2ce8eea82194cf1e5401629ac00ea0b3e19f1869e6f3730"
+            - "0x89646f26f3acc23d161952d42faa3adb44a2cb510d803acc1e7a34d1b9489787"
+            - "0x030b7ab1fc9f98b677cef0f26169a1eda0857cfdd1df364e1988996c79b1f2d4"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2334,6 +2383,12 @@ alterations:
             - "0x6bbf8b19c83a22270688d69281df62d17ddaa8f385fabde021e093e8805ae91e"
             - "0x88955c94103349f3936122be44a845b7cfbe4ae624ec8f0c843579f97d3ffa50"
             - "0xfbe9d7958a210106c38c22edef6d3786ede2d38f4a6955f3df25825d24f8ad3f"
+            - "0xcaed743a399a2d363611269ba37aa017f105eb510c5186acfcc728833f88f6bf"
+            - "0x64fd30869495d41261e72707a82c420fac2c08f1b02153e2a638e327b4584a6f"
+            - "0x9835f7e89b2153175bbd9ec5d29e783cdfaefd0d50993c048823ac059644635c"
+            - "0x9e1abf869665314a318c80c141aa1a1a76caaa15f9c79c8ca85ab8c6867e05e7"
+            - "0x7ce666cf56e61a8913d644f9242432fb783d21bc74115d20f4f93343be7a19dd"
+            - "0xe28b5ee915442f998408e380bc1c775a0e899355003974986b4f91629c51a862"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2841,6 +2896,13 @@ alterations:
             - "0x953f3b743d52139df65f9a8155a80508261d94e0d748e1a1f17278f1ec5e8213"
             - "0x9c49013430c287e886ea18a941968b9d79a537eebb6de0c0026f943377d5c5bc"
             - "0xc839bc347072e0675f6798391c76367390ba14929884dbc5599789cfe431c2a8"
+            - "0x4f1e25ab716374ee6f0222e86730c0bddbd1fb0303d62a1ec6b403268bb1a8c2"
+            - "0x1769d0edfb75b0a52d0ff45b99a64c744ec69c61be5d57f7f2fc7684c1c42f49"
+            - "0xe4fbe957d626b3b08e8c09f33e10dbf3fffc1ae6a33aa7ff09a4c79f228efec4"
+            - "0x4a8078be2a048e8d594a04ae331efef0172eb2733f640e648e6a938f85128a76"
+            - "0x761b7f750c6ce6e853662e12b8a002626619ad5ad32ad8bc8b5014bca516e2d8"
+            - "0x13dd6e422ee15c7e174444b7203628de80d023208cf8643b9b360023e0a63cd2"
+            - "0x451795dde4ca709d95a1e9f7e9044d7dbbfb7cdabfdaaa2cde4bb5e7bcd89106"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2851,6 +2913,7 @@ alterations:
     -
         tx_hashes:
             - "0x725d23fe5877543746c52352b5626cd8892d1fd3910f624b83014523475d99f2"
+            - "0x7d6190216113b78ca6bd82bec58a39813435437b6a96046f755f37fc786afcfa"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -3413,6 +3476,39 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: QUICK
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MIMATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: QUICK
+            -
+                transaction_type: Withdrawal
+                sell_currency: 11QUICK
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: QUICK
             -
                 transaction_type: Withdrawal
@@ -3518,6 +3614,45 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Trade
+                buy_currency: USDC
+                sell_currency: UNI-V2-USDC/OMEN
+            -
+                transaction_type: Trade
+                buy_currency: OMEN
+                sell_currency: UNI-V2-USDC/OMEN
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2-USDC/OMEN
+        actions:
+            -
+                name: keep_only_types
+                keeps:
+                    - Trade
+    -
+        tx_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: UNI-V2-USDC/OMEN
+                sell_currency: USDC
+            -
+                transaction_type: Trade
+                buy_currency: UNI-V2-USDC/OMEN
+                sell_currency: OMEN
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2-USDC/OMEN
+            -
+                transaction_type: Withdrawal
+                sell_currency: OMEN
+        actions:
+            -
+                name: keep_only_types
+                keeps:
+                    - Trade
+    -
+        tx_patterns:
+            -
+                transaction_type: Trade
                 buy_currency: UNI-V2-USDC/OMEN
                 sell_currency: USDC
             -
@@ -3571,11 +3706,47 @@ alterations:
     -
         tx_patterns:
             -
+                transaction_type: Trade
+                buy_currency: MATIC
+                sell_currency: UNI-V2-MATIC/ELE
+            -
+                transaction_type: Trade
+                buy_currency: ELE
+                sell_currency: UNI-V2-MATIC/ELE
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2-MATIC/ELE
+            -
+                transaction_type: Withdrawal
+                sell_currency: ELE
+        actions:
+            -
+                name: keep_only_types
+                keeps:
+                    - Trade
+    -
+        tx_patterns:
+            -
                 transaction_type: Deposit
                 buy_currency: 11ELEMATICQLP
             -
                 transaction_type: Withdrawal
                 sell_currency: UNI-V2
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-WMATIC/ELE
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: UNI-V2
+            -
+                transaction_type: Withdrawal
+                sell_currency: 11ELEMATICQLP
         actions:
             -
                 name: rename_to
@@ -3892,6 +4063,21 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: 11ELEMATICQLP
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: 11ELEMATICQLP
+                staked_token: STAKED-11ELEMATICQLP
+                rewards_income:
+                    - ELE
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: ELE
+            -
+                transaction_type: Deposit
+                buy_currency: 11ELEMATICQLP
         actions:
             -
                 name: convert_to_stake_migration
@@ -4481,6 +4667,20 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: CRVUSDBTCETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: CRVUSDBTCETH
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: WETH
         actions:
             -
                 name: convert_to_trades
@@ -5676,6 +5876,16 @@ alterations:
     -
         tx_patterns:
             -
+                transaction_type: Withdrawal
+                sell_currency: CAMWMATIC
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: CAMWMATIC
+                staked_token: MAI-VAULT-CAMWMATIC
+    -
+        tx_patterns:
+            -
                 transaction_type: Deposit
                 buy_currency: AMWMATIC
             -
@@ -5699,6 +5909,74 @@ alterations:
                 rename_to: UNI-V2-USDC/MIMATIC
             -
                 name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x0e2b2cef6b1aca3af93d251d6db4e89736926c58fc99064c3fb75d383489b1ef"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: UNI-V2
+            -
+                transaction_type: Withdrawal
+                sell_currency: MIMATIC
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-USDC/MIMATIC
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x4987bf08d256c93da5f51c4ff346b21665511b9badf0a547e4f65831c937fbef"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: UNI-V2
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-USDC/MIMATIC
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x52583197834a16694aca5a7fbe5d81757890f44cb87aac305a015f2690fc85a7"
+            - "0x13eb0bec913d6359325351819b66e883af5b5e1c5d5e03719318810e0e3584f9"
+            - "0x36b7314014c594ee08e2a395c9fc71b44931a6ce31d312a917c55b699950e06a"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-USDC/MIMATIC
+            -
+                name: convert_to_stake_migration
+                unstaked_token: UNI-V2-USDC/MIMATIC
+                staked_token: ADDY-VAULT-UNI-V2-USDC/MIMATIC
+    -
+        tx_hashes:
+            - "0xbd91c6220ec662a94e8a30c5ed58de74a43553d689f2e542e6248302b43dad15"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: UNI-V2
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-USDC/MIMATIC
+            -
+                name: convert_to_stake_migration
+                unstaked_token: UNI-V2-USDC/MIMATIC
+                staked_token: ADDY-VAULT-UNI-V2-USDC/MIMATIC
     -
         tx_patterns:
             -
@@ -6059,6 +6337,24 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: FISH
+        actions:
+            -
+                name: keep_only_types
+                keeps:
+                    - Trade
+    -
+        tx_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: UNI-V2-USDC/MIMATIC
+                sell_currency: MIMATIC
+            -
+                transaction_type: Trade
+                buy_currency: UNI-V2-USDC/MIMATIC
+                sell_currency: USDC
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2-USDC/MIMATIC
         actions:
             -
                 name: keep_only_types
