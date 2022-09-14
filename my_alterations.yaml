@@ -71,6 +71,26 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: TAO
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - TAO
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: STONKS
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - STONKS
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: CMVT-94
         actions:
             -
@@ -177,6 +197,16 @@ alterations:
                 name: remove_containing
                 removes:
                     - "BUYSPACERAT"
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: ROLL
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - ROLL
     -
         tx_patterns:
             -
@@ -709,6 +739,7 @@ alterations:
             - "0x92589d209796f36c7c2dd9cd4bb705b595c082917244375a7ba887ad030ea297"
             - "0x35aba54c728bab28dfb3d4db9965ca9a76ec1f12b81fd84f5e3e19fb52b61113"
             - "0xe56fcb22dfcdf94d020e984905a9a9b41130495a2e62d66a3587c051cba39bb6"
+            - "0x9c8f2479147274bf8f76918ea6532f80edae0563d0945782a9826efe5a6a30c2"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -726,6 +757,7 @@ alterations:
     -
         tx_hashes:
             - "0xe21619a9988b8bc980381991cf282abf85ef16639b30525c2a10be2b6133a8d4"
+            - "0x9dd172f0be498abdf22cc93f4ca2a7176fbf7847311b4aa1b5af2b84cee777a8"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -834,61 +866,337 @@ alterations:
             - "0x1e7d3b8b7177c4bf86fdbfdd8db42a911541cfcbba419dcddd9f47e3ba567b61"
         tx_patterns:
             -
-                transaction_type: Withdrawal
-                sell_currency: SLP
+                transaction_type: Deposit
+                buy_currency: MOOIRONTITAN-MATIC
         actions:
-            -
-                name: rename_to
-                token_name: SLP
-                rename_to: SLP-MATIC/TITAN
             -
                 name: convert_to_stake_trade
                 unstaked_token: SLP-MATIC/TITAN
-                staked_token: mooIronTITAN-MATIC
+                staked_token: MOOIRONTITAN-MATIC
     -
         tx_hashes:
+            - "0xf9c4a069333686c8acc5748bb22bc37d0626ce2d27f3f80c97bfac4b32054fc8"
             - "0x5c029696ac01270f9888f72d186137705d85afcebb79cee9558c2710458678df"
         tx_patterns:
             -
                 transaction_type: Deposit
                 buy_currency: MATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: MOOIRONTITAN-MATIC
         actions:
             -
-                name: convert_deposit_to_trade
-                withdrawal:
-                    sell_amount: 49.72609699643979195
-                    sell_currency: mooIronTITAN-MATIC
+                name: convert_to_trades
     -
         tx_hashes:
-            - "0xf9c4a069333686c8acc5748bb22bc37d0626ce2d27f3f80c97bfac4b32054fc8"
+            - "0x81203be513e75d1b373bf05cd79b483ab3321af22e2bdfdcbb5d5b1d159e5255"
         tx_patterns:
             -
                 transaction_type: Deposit
                 buy_currency: MATIC
         actions:
             -
-                name: convert_deposit_to_trade
-                withdrawal:
-                    sell_amount: 86.3353337202107
-                    sell_currency: mooIronTITAN-MATIC
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 3.14834377598942685
+                        sell_currency: LINK
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x323697e89dcc452b2557a782f26faaf37bbd875526df2aa1d2b6e6cc41ea5162"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 4.6418907666578024
+                        sell_currency: PZAP
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0xd63552506716ef5d2080908bc51efe57da85c4a3592b6edab7c58c204e98e800"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 0.363021200827019352
+                        sell_currency: PZAP
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x71f5b212102b842fd60fbec254896a34e441a1995cd88e411770db459d200e1d"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 0.129487208405286922
+                        sell_currency: PZAP
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0xdd0dff6cd7fe3dca8b76de965176f625b0f15928acee4f04cef5ed38d4939df7"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 0.767104813982825025
+                        sell_currency: LINK
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x1b65c2a3a84d004a8ba66749fe52d5abfb080da4369074a9cff88ff66015f471"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 1.00
+                        sell_currency: DFYN
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x5170c033a0e6e96c51c24c9836311c7d0742fcda01c8be8dfb5a14b918207e68"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 0.30920833431848
+                        sell_currency: FISH
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0xc9d2eb4c59602a61b1e82e8e6d4bf0a9695f4c488b5f8f180ce1275c6c840d80"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 55.246957609936245409
+                        sell_currency: FISH
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x27294c202e789b0b08acb35e7f8dca50b564d34a208558f018ccd083da149308"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 7.45
+                        sell_currency: USDC
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x9972a0f8fec861b675ce53d8b17fe83fd3bc5b04af145f9d6f33350b236f4d96"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 0.138033350074291453
+                        sell_currency: FISH
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0xd4f665bb891cd330ba531715171f264096932a76457a32a8a234d6a5d5ad48e7"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 0.18158
+                        sell_currency: USDC
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0xf1e0fb3159ffe70175ae7e2bea92228791877e45a821fb58473e3b5fe84256e5"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 1.959509743449894988
+                        sell_currency: POLYZAP-LP-WETH/MATIC
+                deposits:
+                    -
+                        buy_amount: 0.048919174804265855
+                        buy_currency: WETH
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x36051b7487b2b7b7dc4115bac5d52396f6641f7b2fbccab325660ced93353b7f"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 83.519322624099968553
+                        sell_currency: STAKED-SLP-MATIC/FISH
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x9c02e3d54f80d80c8fed99fc2cebfda263ffd417e3f3f4e3971e637b50a27780"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 4.940393640016103651
+                        sell_currency: FISH
+                    -
+                        sell_amount: 125.284999999999999987
+                        sell_currency: WETH
+                deposits:
+                    -
+                        buy_amount: 24.829193919691999663
+                        buy_currency: DFYNLP-FISH/WETH
+            -
+                name: remove_containing
+                removes:
+                    - MATIC
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0xf1dd74112d1eba5f710fbf373a44ce19f2b33f65c3c0ace4cbfe8503192060a0"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 0.159169932334688279
+                        sell_currency: WETH
+                    -
+                        sell_amount: 250.733522275806015268
+                        sell_currency: MATIC
+                deposits:
+                    -
+                        buy_amount: 5.089092942932336309
+                        buy_currency: DFYNLP-MATIC/WETH
+            -
+                name: merge_same_currency
+                merge_currency: MATIC
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x82166e35f53015f021a448eafa373e40fb7e65e8f3e865039255b20d9ea7dd22"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 624.336208885720713201
+                        sell_currency: MATIC
+                deposits:
+                    -
+                        buy_amount: 0.000214568122917412
+                        buy_currency: MOOQUICKMATIC-USDC
+            -
+                name: merge_same_currency
+                merge_currency: MATIC
+            -
+                name: convert_to_trades
     -
         tx_hashes:
             - "0xc663edcce3eb2472d214a43bb5b14c9765e0cc4482cb3e5145b436f341966e42"
         tx_patterns:
             -
                 transaction_type: Deposit
-                buy_currency: MATIC
+                buy_currency: MOOIRONTITAN-MATIC
             -
-                transaction_type: Withdrawal
-                sell_currency: MATIC
+                transaction_type: Deposit
+                buy_currency: MATIC
         actions:
             -
-                name: convert_deposits_to_incomes
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 632.873454511393478561
+                        sell_currency: MATIC
             -
-                name: convert_withdrawal_to_trade
-                deposit:
-                    buy_amount: 49.72609699643979195
-                    buy_currency: mooIronTITAN-MATIC
+                name: merge_same_currency
+                merge_currency: MATIC
+            -
+                name: convert_to_trades
     -
         tx_hashes:
             - "0xc23c2eac7f8d0a3a6e1169ebee99e05591f8476ea43f3e417f52a4c69c1d99dc"
@@ -1065,12 +1373,34 @@ alterations:
                 token_name: DFYNLP
                 rename_to: DFYNLP-DFYN/MIMATIC
             -
-                name: convert_to_stake_trade
+                name: convert_to_stake_migration
                 unstaked_token: DFYNLP-DFYN/MIMATIC
                 staked_token: STAKED-DFYNLP-DFYN/MIMATIC
     -
         tx_hashes:
+            - "0x3610726845b5f90ec336a6f713104ba9f4f405f0abe23f817e4a93c84cd5a0d6"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DFYN
+            -
+                transaction_type: Deposit
+                buy_currency: DFYNLP
+        actions:
+            -
+                name: rename_to
+                token_name: DFYNLP
+                rename_to: DFYNLP-DFYN/MIMATIC
+            -
+                name: convert_to_stake_migration
+                unstaked_token: DFYNLP-DFYN/MIMATIC
+                staked_token: STAKED-DFYNLP-DFYN/MIMATIC
+                rewards_income:
+                    - DFYN
+    -
+        tx_hashes:
             - "0xa159840b6f623a15fca179dfd97abaf2c2a35744e23f4c7796d43c168c1f681d"
+            - "0x706b95fb9266664cfbe641488cd103c7ee8ae8bd8116580aee97634556250d51"
         tx_patterns:
             -
                 transaction_type: Withdrawal
@@ -1084,6 +1414,27 @@ alterations:
                 name: convert_to_stake_trade
                 unstaked_token: DFYNLP-CRV/ETH
                 staked_token: STAKED-DFYNLP-CRV/ETH
+    -
+        tx_hashes:
+            - "0xa85f5ed702d3c19924988d0efca0b4fc437aef6bc9d6466d060c7573cd254067"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DFYN
+            -
+                transaction_type: Deposit
+                buy_currency: DFYNLP
+        actions:
+            -
+                name: rename_to
+                token_name: DFYNLP
+                rename_to: DFYNLP-CRV/ETH
+            -
+                name: convert_to_stake_trade
+                unstaked_token: DFYNLP-CRV/ETH
+                staked_token: STAKED-DFYNLP-CRV/ETH
+                rewards_income:
+                    - DFYN
     -
         tx_hashes:
             - "0x7a790e0bc915b2fff584de30d4c9ad2b2ee7b2052926083850918c62e1b3cb08"
@@ -1477,6 +1828,24 @@ alterations:
                 buy_currency: DFYNLP
             -
                 transaction_type: Withdrawal
+                sell_currency: BIFI
+            -
+                transaction_type: Withdrawal
+                sell_currency: DFYN
+        actions:
+            -
+                name: rename_to
+                token_name: DFYNLP
+                rename_to: DFYNLP-BIFI/DFYN
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DFYNLP
+            -
+                transaction_type: Withdrawal
                 sell_currency: DFYN
             -
                 transaction_type: Withdrawal
@@ -1599,6 +1968,17 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: WMATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: MIMATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: FISH
             -
                 transaction_type: Deposit
@@ -1678,6 +2058,7 @@ alterations:
         tx_hashes:
             - "0x7cddb3b3f28d0825aed99cc2123e3f71375d8ec9da3d20a328586475a0be7c54"
             - "0x522cee16136c717a19afbced9208ebfdd67e0c668ba3347de430e1a77abcbbfe"
+            - "0x8eb96b9ff6fab4ac412f433ddb34638a5d8866af68e63b9165bb75fe2f437de7"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -1698,6 +2079,7 @@ alterations:
                     - OMEN
     -
         tx_hashes:
+            - "0x1be08f70c90abb8a97a94f26092b57619e364f4c7103c4b5b389b5f82a48255a"
             - "0x710b329d7c3b96520e4c14261237294658094e4139900dd8570d4c6e91cdf0c3"
         tx_patterns:
             -
@@ -2321,6 +2703,9 @@ alterations:
         tx_hashes:
             - "0xb99302d24ceaae88a6a8cf21286890842a4609126559817126c216b32f91653c"
             - "0x402771c1101578f95527c3a990986acb4320dc4e3e69c036f458e557117e2f6a"
+            - "0x47f3bc0225f620c9f5cf1e1999bab191c3f7e0f047f8a1b2908882ecda79c9ed"
+            - "0x44761d16a203a9b8c89e0215e17c051fbcea252e2d21585cee13b280abd7ec18"
+            - "0xf060ac671c5ae796b22af94e94e67ead7e854b481495976cf2b5aec26ccfbd2b"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2369,6 +2754,7 @@ alterations:
             - "0xcd3598b6141258a9b2ce8eea82194cf1e5401629ac00ea0b3e19f1869e6f3730"
             - "0x89646f26f3acc23d161952d42faa3adb44a2cb510d803acc1e7a34d1b9489787"
             - "0x030b7ab1fc9f98b677cef0f26169a1eda0857cfdd1df364e1988996c79b1f2d4"
+            - "0x6f6e6b7ac6106bcfa9ab83c0cbca28cbe3c5b32c3c3cca224277914f1637b976"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2389,10 +2775,26 @@ alterations:
             - "0x9e1abf869665314a318c80c141aa1a1a76caaa15f9c79c8ca85ab8c6867e05e7"
             - "0x7ce666cf56e61a8913d644f9242432fb783d21bc74115d20f4f93343be7a19dd"
             - "0xe28b5ee915442f998408e380bc1c775a0e899355003974986b4f91629c51a862"
+            - "0xc449187ecc6a82d9bbd4a2000f1fb674ca4fe62061e91417e82988ebcf781858"
+            - "0x246d5f326700c955c1f538caa0c0b7fd2f87f72647934619f84b84bc18a23780"
+            - "0xc7087bbb2688436459ef44f69dc16273dfb6515c69098926d6fc3de132246c33"
+            - "0xb391ba91d6f17bd0a413da74bf1f834fd83b7870c3728b6a1362e01cb8d9a5d1"
+            - "0x059a26c98c482223f0ab7735d390f3ab5c1fba5491e839b24aff4e1848eb91a9"
         tx_patterns:
             -
                 transaction_type: Deposit
                 buy_currency: WMATIC
+        actions:
+            -
+                name: convert_deposits_to_incomes
+    -
+        tx_hashes:
+            - "0x1f72ab1d415fc27c425b5de68a747f625487bc71917956fa3df9b51f4415b09a"
+            - "0x4f3e782f9bbb165fb065cd5b4653f841c8cb4b36b39c5a486a36c936acbe7406"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: CRYSTL
         actions:
             -
                 name: convert_deposits_to_incomes
@@ -2510,6 +2912,9 @@ alterations:
             - "0xaf4ba53dbeb2c360c6bb3196a5c95e248a1342c583dd3a93389bd6a5d22065cc"
             - "0xf522cdc71795eb8f841f75ac4ea9e1fe0323129f4206e26d0b6f0cc49af50a9a"
             - "0x5d6f58fdd639c1f04cd64423167e31ff6f127349824015f892a399a6b303cfd0"
+            - "0x557fbb37d3e6249e214d2fd7891c04810ab90d3e5626b34cf7fb435b9218f49d"
+            - "0x99317fc6abee14125067fe023a20664c003a71cd3f43252b7f448202046cc0eb"
+            - "0xca26d1a500710710ffe27dafd8a0cd294c889882ccee2fc6a1ad14fc33684f1c"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -2546,6 +2951,18 @@ alterations:
                 name: convert_to_stake_migration
                 unstaked_token: POLYZAP-LP-WETH/PZAP
                 staked_token: STAKED-POLYZAP-LP-WETH/PZAP
+    -
+        tx_hashes:
+            - "0x803a469210eff21baaf500ff91f9c5966c43e2540f5677031aeb9e33a9fe4a0c"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: CRYSTL
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: CRYSTL
+                staked_token: VAULTED-CRYSTL
     -
         tx_hashes:
             - "0xf78bb4b2919352c518d575e64521be2c96c0595eddafab88289a2cd56b45af32"
@@ -2903,6 +3320,18 @@ alterations:
             - "0x761b7f750c6ce6e853662e12b8a002626619ad5ad32ad8bc8b5014bca516e2d8"
             - "0x13dd6e422ee15c7e174444b7203628de80d023208cf8643b9b360023e0a63cd2"
             - "0x451795dde4ca709d95a1e9f7e9044d7dbbfb7cdabfdaaa2cde4bb5e7bcd89106"
+            - "0x9bb8143ee8d472eb820b93d8fb9e119c5a57921b4624aa6da602c006bbc5df89"
+            - "0x083c62996dc4ec0592e472d767b7500a304b8be4f03287a9978d9228cb3fb56f"
+            - "0x3b697401d8fed8553645704a62a1ef54f27173d299b30e0a1620090cb258368e"
+            - "0x4e373c09a254e768bbbe6097086cbe77d289dcc801b6f55c24120ba0e6924388"
+            - "0x1d1f2e6dd193bdfa17195c2016e3d706382f31554e07212926cec26c6dcda510"
+            - "0x5ccf664bbe99f4f02c8971845b478cec540c47270168a49ff5bad878dcb366d1"
+            - "0x81b5e7f6202b6c44bdf5767dfc2d9f339a251985306ea889592ca07c89c585ec"
+            - "0x29177223290bb563d3d515e3802c90c55c7e42ac60ff1915d334995a6721efe3"
+            - "0xad7454f6dea35c99f7e1a241b8bb2f2e4a7e3cb41861b35d8f9ccfcb708b6b2a"
+            - "0xc3ed272cc667a74c670f48032b19496c0d16f9cf6f6c24c2cae74d924270057c"
+            - "0x7a42a00ae2ddb4b72927beded68dfa595cb55d1b8ef2ac287a823133cecc8de0"
+            - "0xa45f5417dbf460478a557172046108d52912eae4778e39e0400ba909f5eecb4f"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -3022,6 +3451,21 @@ alterations:
                 staked_token: SINGLE-STAKE-FISH
                 rewards_income:
                     - FISH
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: FISH
+            -
+                transaction_type: Deposit
+                buy_currency: PAW
+        actions:
+            -
+                name: convert_to_stake_migration
+                unstaked_token: FISH
+                staked_token: SINGLE-STAKE-FISH
+                rewards_income:
+                    - PAW
     -
         tx_patterns:
             -
@@ -3300,6 +3744,21 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: MOODFYNBIFI-DFYN
+            -
+                transaction_type: Withdrawal
+                sell_currency: DFYNLP
+        actions:
+            -
+                name: rename_to
+                token_name: DFYNLP
+                rename_to: DFYNLP-BIFI/DFYN
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: FISH
             -
                 transaction_type: Withdrawal
@@ -3420,14 +3879,37 @@ alterations:
     -
         tx_patterns:
             -
-                transaction_type: Deposit
+                transaction_type: Trade
                 buy_currency: DAI
-            -
-                transaction_type: Withdrawal
                 sell_currency: AM3CRV
         actions:
             -
-                name: convert_to_trades
+                name: do_nothing
+    -
+        tx_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: USDC
+                sell_currency: AM3CRV
+        actions:
+            -
+                name: do_nothing
+    -
+        tx_patterns:
+            -
+                transaction_type: Trade
+                buy_currency: AM3CRV
+                sell_currency: DAI
+            -
+                transaction_type: Trade
+                buy_currency: AM3CRV
+                sell_currency: USDC
+            -
+                transaction_type: Lost
+                sell_currency: DAI
+        actions:
+            -
+                name: do_nothing
     -
         tx_patterns:
             -
@@ -3491,6 +3973,17 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: USDC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: MIMATIC
         actions:
             -
                 name: convert_to_trades
@@ -5794,6 +6287,28 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: ROUTE (POS)
+            -
+                transaction_type: Withdrawal
+                sell_currency: MIMATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: DFYN
+            -
+                transaction_type: Withdrawal
+                sell_currency: MIMATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: WETH
             -
                 transaction_type: Withdrawal
@@ -5866,6 +6381,17 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: MIMATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: MOODINOSWAPUSDC-MIMATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: CAMWMATIC
             -
                 transaction_type: Withdrawal
@@ -5907,6 +6433,61 @@ alterations:
                 name: rename_to
                 token_name: UNI-V2
                 rename_to: UNI-V2-USDC/MIMATIC
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: B-QIPOOL
+            -
+                transaction_type: Withdrawal
+                sell_currency: MIMATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: B-POLYDEFI
+            -
+                transaction_type: Withdrawal
+                sell_currency: WETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: B-POLYDEFI
+            -
+                transaction_type: Withdrawal
+                sell_currency: BAL
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: BP-MTA
+            -
+                transaction_type: Withdrawal
+                sell_currency: WMATIC
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: WMATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: BP-MTA
+        actions:
             -
                 name: convert_to_trades
     -
@@ -5964,6 +6545,7 @@ alterations:
     -
         tx_hashes:
             - "0xbd91c6220ec662a94e8a30c5ed58de74a43553d689f2e542e6248302b43dad15"
+            - "0x1443e94e6048c2816927551f59a34f859f54ddd3fc9283303b6ca82548385967"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -6022,6 +6604,17 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: BED
+            -
+                transaction_type: Withdrawal
+                sell_currency: WETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: MOOMAIUSDC-MIMATIC
             -
                 transaction_type: Deposit
@@ -6033,6 +6626,23 @@ alterations:
             -
                 name: merge_same_currency
                 merge_currency: USDC
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MOOTELXCHANGEQUICKWMATIC-TEL
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: MATIC
+        actions:
+            -
+                name: merge_same_currency
+                merge_currency: MATIC
             -
                 name: convert_to_trades
     -
@@ -6204,6 +6814,10 @@ alterations:
                 sell_currency: DFYNLP
         actions:
             -
+                name: rename_to
+                token_name: DFYNLP
+                rename_to: DFYNLP-USDC/USDT
+            -
                 name: convert_to_trades
     -
         tx_patterns:
@@ -6296,6 +6910,17 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: DAI
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: BAL
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
         actions:
             -
                 name: convert_to_trades

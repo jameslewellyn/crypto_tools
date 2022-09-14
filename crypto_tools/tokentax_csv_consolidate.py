@@ -100,7 +100,7 @@ class TokenTaxTransaction:
             transaction_dict["Import"],
             transaction_dict["Comment"],
             datetime.strptime(transaction_dict["Date"], "%Y-%m-%dT%H:%M:%S.%fZ"),
-            Decimal(transaction_dict["USDEquivalent"].strip(currency_symbol).replace(",", "")),
+            Decimal(str(transaction_dict["USDEquivalent"] or "$0.00").strip(currency_symbol).replace(",", "")),
             datetime.strptime(transaction_dict["UpdatedAt"], "%Y-%m-%dT%H:%M:%S.%fZ"),
         )
 
@@ -192,11 +192,11 @@ def ensure_common_elements_are_identical_in_transaction_list(transaction_list: L
         for transaction in transaction_list
     ):
         raise Exception("Cannot handle multiple Dates within the same transaction hash.")
-    if not all(
-        abs((transaction.updated_at - transaction_list[0].updated_at).total_seconds()) < 1
-        for transaction in transaction_list
-    ):
-        raise Exception("Cannot handle multiple Updated At Times within the same transaction hash.")
+    # if not all(
+        # abs((transaction.updated_at - transaction_list[0].updated_at).total_seconds()) < 1
+        # for transaction in transaction_list
+    # ):
+        # raise Exception("Cannot handle multiple Updated At Times within the same transaction hash.")
 
 
 def separate_buy_from_sell_transactions(
@@ -702,48 +702,62 @@ class HalfTradeWithdrawal(BaseModel):
     sell_currency: str
 
 
-class AlterationActionConvertDepositToTrade(BaseModel):
+class AlterationActionAddMissing(BaseModel):
     """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
 
-    name: Literal["convert_deposit_to_trade"]
-    withdrawal: HalfTradeWithdrawal
+    name: Literal["add_missing"]
+    deposits: Optional[Sequence[HalfTradeDeposit]]
+    withdrawals: Optional[Sequence[HalfTradeWithdrawal]]
 
     def perform_on_transaction_list(
-        self: AlterationActionRemoveContaining,
+        self: AlterationActionAddMissing,
         transaction_list: List[TokenTaxTransaction],
     ) -> List[TokenTaxTransaction]:
-        """Add a new transaction to the list."""
-        deposit_list = [t for t in transaction_list if t.transaction_type == TokenTaxTransactionType.DEPOSIT]
-        non_deposit_list = [t for t in transaction_list if t.transaction_type != TokenTaxTransactionType.DEPOSIT]
-        if len(deposit_list) != 1:
-            raise Exception("Cannot convert deposit to trade with more than 1 Deposit transaction in list.")
-        completed_transaction = deposit_list[0]
-        completed_transaction.transaction_type = TokenTaxTransactionType.TRADE
-        completed_transaction.sell_amount = self.withdrawal.sell_amount
-        completed_transaction.sell_currency = self.withdrawal.sell_currency
-        return non_deposit_list + [completed_transaction]
-
-
-class AlterationActionConvertWithdrawalToTrade(BaseModel):
-    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
-
-    name: Literal["convert_withdrawal_to_trade"]
-    deposit: HalfTradeDeposit
-
-    def perform_on_transaction_list(
-        self: AlterationActionRemoveContaining,
-        transaction_list: List[TokenTaxTransaction],
-    ) -> List[TokenTaxTransaction]:
-        """Add a new transaction to the list."""
-        withdrawal_list = [t for t in transaction_list if t.transaction_type == TokenTaxTransactionType.WITHDRAWAL]
-        non_withdrawal_list = [t for t in transaction_list if t.transaction_type != TokenTaxTransactionType.WITHDRAWAL]
-        if len(withdrawal_list) != 1:
-            raise Exception("Cannot convert withdrawal to trade with more than 1 Withdrawal transaction in list.")
-        completed_transaction = withdrawal_list[0]
-        completed_transaction.transaction_type = TokenTaxTransactionType.TRADE
-        completed_transaction.buy_amount = self.deposit.buy_amount
-        completed_transaction.buy_currency = self.deposit.buy_currency
-        return non_withdrawal_list + [completed_transaction]
+        """Add a new transactions to the list."""
+        new_transaction_list: List[TokenTaxTransaction] = list()
+        if self.deposits is not None:
+            for deposit in self.deposits:
+                new_transaction_list.append(
+                    TokenTaxTransaction(
+                        TokenTaxTransactionType.DEPOSIT,
+                        deposit.buy_amount,
+                        deposit.buy_currency,
+                        Decimal(0),
+                        "",
+                        Decimal(0),
+                        "",
+                        transaction_list[0].exchange,
+                        transaction_list[0].exchange_id,
+                        transaction_list[0].group,
+                        transaction_list[0].import_name,
+                        transaction_list[0].comment,
+                        transaction_list[0].date,
+                        Decimal(0),
+                        transaction_list[0].updated_at,
+                    ),
+                )
+        if self.withdrawals is not None:
+            for withdrawal in self.withdrawals:
+                new_transaction_list.append(
+                    TokenTaxTransaction(
+                        TokenTaxTransactionType.WITHDRAWAL,
+                        Decimal(0),
+                        "",
+                        withdrawal.sell_amount,
+                        withdrawal.sell_currency,
+                        Decimal(0),
+                        "",
+                        transaction_list[0].exchange,
+                        transaction_list[0].exchange_id,
+                        transaction_list[0].group,
+                        transaction_list[0].import_name,
+                        transaction_list[0].comment,
+                        transaction_list[0].date,
+                        Decimal(0),
+                        transaction_list[0].updated_at,
+                    ),
+                )
+        return transaction_list + new_transaction_list
 
 
 class AlterationActionMergeSameCurrency(BaseModel):
@@ -833,8 +847,7 @@ AlterationActionUnion = Annotated[
         AlterationActionConvertDepositsToIncomes,
         AlterationActionConvertDepositsToBorrows,
         AlterationActionConvertToAirdrop,
-        AlterationActionConvertDepositToTrade,
-        AlterationActionConvertWithdrawalToTrade,
+        AlterationActionAddMissing,
         AlterationActionKeepOnlyTypes,
         AlterationActionRenameToken,
         AlterationActionRemoveContaining,
@@ -1060,7 +1073,7 @@ def main() -> None:
                 transaction_hash,
             )
             quick_print_transactions_same_hash_list(separated_transaction_list)
-            # break
+            break
         # logger.info("__________________________________________________")
 
     with output_tokentax_csv_file_path.open("w") as output_tokentax_csv_file:
@@ -1101,3 +1114,6 @@ def main() -> None:
 
     # Successful exit
     sys.exit(0)
+
+# Paraswap trades, confirm good
+# Convert_deposit/withdrawal to trade -> ensure all called out hashes end up in fixed
