@@ -1092,7 +1092,7 @@ def main() -> None:
                 transaction_hash,
             )
             quick_print_transactions_same_hash_list(separated_transaction_list)
-            break
+            # break
         # logger.info("__________________________________________________")
 
     with output_tokentax_csv_file_path.open("w") as output_tokentax_csv_file:
