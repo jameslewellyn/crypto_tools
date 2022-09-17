@@ -1136,3 +1136,4 @@ def main() -> None:
 
 # Paraswap trades, confirm good
 # Convert_deposit/withdrawal to trade -> ensure all called out hashes end up in fixed
+# Split dollar amount on trades
