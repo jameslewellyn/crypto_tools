@@ -81,6 +81,16 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: LELX.IO
+        actions:
+            -
+                name: remove_containing
+                removes:
+                    - LELX.IO
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: ZERS.IO
         actions:
             -
@@ -489,10 +499,22 @@ alterations:
     -
         tx_hashes:
             - "0x075557302c38a9d0b1370ceac619349a4b7a7410357d3b6cad409003d15e5a2d"
+            - "0x050f5493fad46538fee82aa87d45379dcb48889f9be908d57c760a82c0c7f6a3"
         tx_patterns:
             -
                 transaction_type: Withdrawal
                 sell_currency: MATIC
+        actions:
+            -
+                name: do_nothing
+    -
+        tx_hashes:
+            - "0x2265baf1914e63dc2be62ecc58cf4c17d9f27689b7a3bcb4262e6f493f025239"
+            - "0x485c6575185cb434883a31cd8cc4affe3860f6fdd229272bb672f3ae4004fec8"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
         actions:
             -
                 name: do_nothing
@@ -1492,6 +1514,22 @@ alterations:
                 name: convert_to_trades
     -
         tx_hashes:
+            - "0x863d9691fa3f5e32de19ed12f19fe96504b8fab4fea739ca458e9549eea665ee"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 86.899338214576185263
+                        sell_currency: HOPE
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
             - "0xff8650c948f0b7870954f6996cdc4c54c4f565290cf86b27242b79eb8d317e5f"
         tx_patterns:
             -
@@ -1631,6 +1669,22 @@ alterations:
                 name: convert_to_trades
     -
         tx_hashes:
+            - "0x9275d36e2a1e1c0df28ea5c81d4610bd7c9f6847a3228054a674f6457afa7a86"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: MATIC
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 0.550924229200937179
+                        sell_currency: ADDY
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
             - "0x7d6ca844341b243488ae0584663577c1abbb120fdc0d69a0ee6771e519c93020"
         tx_patterns:
             -
@@ -1691,6 +1745,106 @@ alterations:
                     -
                         sell_amount: 50.748779293755973449
                         sell_currency: MOOAPESWAPBANANA-MATIC
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x4abfe1be64d92532e43a006ceb3d6860252aa604160ef0a4a626098602283f5f"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: MIMATIC
+        actions:
+            -
+                name: add_missing
+                deposits:
+                    -
+                        buy_amount: 7.080361563
+                        buy_currency: BONDED-SCLAM
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x61d58a606b40b76bdee2695e358cd401d759f1337ddb873a27258ddf29edaeeb"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: SCLAM2
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 7.080361563
+                        sell_currency: BONDED-SCLAM
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x3d5a1cbdb2cb7845c90335b5e44919a44d64ab3147cc4ebfdef8013c61d516b3"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: SLP
+        actions:
+            -
+                name: rename_to
+                token_name: SLP
+                rename_to: SLP-FRAX/CLAM2
+            -
+                name: add_missing
+                deposits:
+                    -
+                        buy_amount: 8.317097645
+                        buy_currency: BONDED-SCLAM
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x0b2038c4da1fef50e4f29646bd56f02497792ded19410b00f3994707a34e7e48"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: SCLAM2
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 8.317097645
+                        sell_currency: BONDED-SCLAM
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x96f040dfe0739d3993e0383a7703cf01a27f88d9c8917d9ae7e1c18d2f300d46"
+        tx_patterns:
+            -
+                transaction_type: Withdrawal
+                sell_currency: FRAX
+        actions:
+            -
+                name: add_missing
+                deposits:
+                    -
+                        buy_amount: 11.543698588
+                        buy_currency: BONDED-SCLAM
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0xdef67756afc66511c4ada78fa83912c3a764883ebcdaae067f41f633ee3e73f8"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: SCLAM2
+        actions:
+            -
+                name: add_missing
+                withdrawals:
+                    -
+                        sell_amount: 11.543698588
+                        sell_currency: BONDED-SCLAM
             -
                 name: convert_to_trades
     -
@@ -2408,6 +2562,7 @@ alterations:
     -
         tx_hashes:
             - "0x24f8be0aa2d24ff3989aa11d95b6906980ef04266bd6bcc642bfb8af228e0521"
+            - "0x2cb0dd4fe7e20f10d5d1764d06ba24331677cbc40ab9915b9e811c79b05c8330"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -3060,6 +3215,24 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: WETH
+        actions:
+            -
+                name: rename_to
+                token_name: CAT-LP
+                rename_to: CAT-LP-FISH/WETH
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: FISH
+            -
+                transaction_type: Deposit
+                buy_currency: WETH
+            -
+                transaction_type: Withdrawal
+                sell_currency: CAT-LP
         actions:
             -
                 name: rename_to
@@ -3913,6 +4086,58 @@ alterations:
                     - MOON
     -
         tx_hashes:
+            - "0x52bb18cc096a06885768590672cddc763c5c1be7bf5c133ca2335c0dc735d767"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: UNI-V2
+            -
+                transaction_type: Withdrawal
+                sell_currency: WMATIC
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-MATIC/WETH
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0x65468867c58170c6627f683752e438442fb2853d5282627bd85691e302f2e440"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: WMATIC
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-MATIC/WETH
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
+            - "0xf3034d7c9e6aa57f0557c2beb8d26cd7ad943637cc911f45ed85b99c8c645543"
+            - "0x0aff66079961d4890d1efbf0f6d5d5f82540cd230f4faffdae5eb0195604310b"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: UNI-V2
+            -
+                transaction_type: Withdrawal
+                sell_currency: USDC
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-MATIC/WETH
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
             - "0xdb11ca9122227d5533421252c630d3707d500274cc550f731f07842021c6e0bb"
         tx_patterns:
             -
@@ -4411,6 +4636,7 @@ alterations:
             - "0xf5c72d20ab67229a3914eb07e09f7586e3c9e24096812c9abb293f6bf29c82c7"
             - "0xc23786500458f197a7189e371c2bb019e52bd90837ede054ada75ff29b5ff631"
             - "0xd6c563bcf2cce5a8808358fd433d0cf6830da42699595ea03a8f8c4e3da0f93f"
+            - "0x94a79d3101039358c15dfc55e87f7f0e51a525fe73ff5e15edf93a19522b1f9d"
         tx_patterns:
             -
                 transaction_type: Withdrawal
@@ -4511,6 +4737,9 @@ alterations:
             - "0x2185fc20f9a123ff6d6cb90c6e8525741bc3b8b0f7d7659f2ee0ee7589621c76"
             - "0x110073b8ba41d717c6634832ddcf8ed94e210fab47e645a2fece5aca81fb493e"
             - "0xfe5fc34a4817397ad95d59a3dfe425107a89b90765404ae5850a0598fcbff49e"
+            - "0x545e8d006335f560c6a60aaed648aafe359aded22e22c84dbc57a95afa68f394"
+            - "0xdbeb07ca52a3ade3102800f5d244d1c408c73ed8bef69317f4d57ee5267be415"
+            - "0x75053f4c4ae4b0906fc9ce23f835d8358744856c81b07ccfcc61b3a58a368771"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -4669,6 +4898,10 @@ alterations:
             - "0x1d45430783c44897a7ac4b1d1c7820b5859fb64a95f46d8d0b0c7ec15a1dc988"
             - "0x11cdbe2b0b46c7ca9b45991b5af39641f85cfeaccb41ea340413fb34ef9b6bee"
             - "0x737cfeed9bf6fbb41a6135c3269a13bda6715d83fd55463c4fcf1bdfa96d7078"
+            - "0x18cf578b85e6b8fb71f2619cbdc86a50381c14adef7c47b4c48e0a067deacd74"
+            - "0xa6f64e004a5e7c05e65656122dc6eeca057bf7dd4631add25e042f408497369a"
+            - "0xbbc9916f023abca5c07b769f8d07555496a74c9f57b0e4f5253ff9e24651e072"
+            - "0x95f7e8008611fb1049bb04a53ff4cac67c5294de5075b670e63762aef085a52f"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -5250,6 +5483,7 @@ alterations:
             - "0xa1db8d38e8f3a3de31cdc641dd69a69e832cae831998ef6dcd2db266ad909bbb"
             - "0x0dd0165bda459c7522e664d6b2392df9f5c2ad2663d3905d35dc596f6a5c609b"
             - "0x430bcd27feef21caacf2f6b2f3baf1fca5e10b67c0f40bf836bdab0d68386cec"
+            - "0x189903f22457e2da9e6113a07a32796fe06ecf62d83dc18c0ebe16f18684968e"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -5382,6 +5616,10 @@ alterations:
             - "0x8d211687cf68b28adbe15b2d0042b267ace148d21aa8b800acdba54acd575e13"
             - "0x4d9a1f27c252df4300484b6b2fdbb459908e0a5ad6802948d197ed6b63c84aca"
             - "0x20438fdeacbdf15d59bbbf189ddab81614cc9b1f19c733b1dc2c39f050495ecc"
+            - "0x54ca51f1a6c7f415944129c2afa59ef8a11a8416f7a06523499ca372beb777a9"
+            - "0x0a3313852c30b2a0cdc57eda0d52a6745a83420e7fd271514d954db6addcd2c2"
+            - "0xb3c6670f3c0395ceeaa740770722e39915b01f5c6a30504b16f6d1bb71520b89"
+            - "0x086f35e3df446b0e1cf0d8f8de5ded495f7a02dc058ec67216dc8524f172bbfd"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -5631,6 +5869,13 @@ alterations:
             - "0xcbd84a62fd41596650fc536be290c4eb03cfca656c1aaade9f0e30d821367a71"
             - "0x148bc8a888a5b916da4078e923f87b932832b81d9c010e64b276a1b1e8536f5f"
             - "0xf124370ec53d16d3917a806d804265a11a2823d87dfd538408f62aa359c71d7e"
+            - "0x7b85611c3a4e98b93778fdc02a7a9ac2707c1f53aed602b2bc5aa99b2b306b41"
+            - "0x7d63af5a198a31d44b3e1394dcd06e4ce04dbf42b59d7148177ae409008ab33a"
+            - "0x071cca7fe477c0a56620dcbb0fb874492fc331c7d247ab9bd6d8bed5c1091111"
+            - "0x78bfc36f1640a9330143c408f34c1289df38c6e489179eab13cc06c2f3507aa8"
+            - "0x453bbb521f42befc2661bee3c0c115e60b9f73db88839c8d101949f716fc0826"
+            - "0x1a78e793dc31d9b350757acbd719782e0c11ddec74d686b29c268933d1879437"
+            - "0x51471ab098659507b0295ac8f7466effc49709a434ffafe7ddbc1acc8c8f67c7"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -5703,6 +5948,12 @@ alterations:
         tx_hashes:
             - "0xa3f18423308c08e29582839af9d85b1e3a58c553384ec1da85379aa7260105da"
             - "0x3ead97d580b40596def99c9a24ab4cb7dcf881e08e1fffe458108f0638d8f1e4"
+            - "0x8dfc04e37f1b8cb24f1734545be4021819cc462930688503345d259779143f15"
+            - "0x0fb28cd2ee13c60c7b5871eee0141784d9f42d6147cab06cd70a45c5d09d0588"
+            - "0xb4130e54a0b6fad1b6ea633d8e8e02b942e661f742ca96d481fdd7e86a1c5137"
+            - "0x16c7620d00db53cacc9b8c0a024830fca5c1b64db7823e1b996d83e937402850"
+            - "0xfda091cc6ccf22049cd5eb48463c28c5f8fe81abe799e65e0801597297e64c1a"
+            - "0x1b364fb366beb3ccfe1c2441af1df30bf892fef0233f3ea6485ad5b18926d40c"
         tx_patterns:
             -
                 transaction_type: Withdrawal
@@ -5717,6 +5968,7 @@ alterations:
             - "0x8917aee8e00cd06dc37efb9daebaafd435c9c8dbe98340901f815ce2b44b7654"
             - "0x78dbab15aeb1586a53ba6702437443a05d7f9c8463555d1efc965bb1356c00d6"
             - "0x480d653084e821c3022dad4ca9929eff4be117f0390e80d966a5986b76d38d47"
+            - "0xa2a90192057214eaf016d0d009913959ad7a96e1cd0c39ada9393019f424f59a"
         tx_patterns:
             -
                 transaction_type: Withdrawal
@@ -5743,6 +5995,7 @@ alterations:
         tx_hashes:
             - "0xd9a8f8f4e6ce62882a682591473f509d2dd8476128429e8d2a510264cb2fce1f"
             - "0xc946dcca51a350d4211751e572f2f4da9d182cb4956a9e227707636447073462"
+            - "0x16f4fe79a27d1d16c9defc6ce99cd6e5c349ab548420bb176c6d2b1be85f245a"
         tx_patterns:
             -
                 transaction_type: Deposit
@@ -6168,6 +6421,24 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: AGA
+            -
+                transaction_type: Deposit
+                buy_currency: AGAR
+            -
+                transaction_type: Withdrawal
+                sell_currency: DFYNLP
+        actions:
+            -
+                name: rename_to
+                token_name: DFYNLP
+                rename_to: DFYNLP-AGAR/AGA
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: CRV
             -
                 transaction_type: Deposit
@@ -6436,6 +6707,28 @@ alterations:
         tx_patterns:
             -
                 transaction_type: Deposit
+                buy_currency: B-33AVAX-33WETH-33SOL
+            -
+                transaction_type: Withdrawal
+                sell_currency: WETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: WETH
+            -
+                transaction_type: Withdrawal
+                sell_currency: B-33AVAX-33WETH-33SOL
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
                 buy_currency: ROUTE (POS)
             -
                 transaction_type: Withdrawal
@@ -6540,6 +6833,17 @@ alterations:
             -
                 transaction_type: Withdrawal
                 sell_currency: MOOQUICKQUICK-ETH
+        actions:
+            -
+                name: convert_to_trades
+    -
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: VDFYN
+            -
+                transaction_type: Withdrawal
+                sell_currency: DFYN
         actions:
             -
                 name: convert_to_trades
@@ -8534,6 +8838,23 @@ alterations:
                 name: convert_to_trades
     -
         tx_hashes:
+            - "0x2181f0956619dd9944ba68c40f053e9f54c767433060b59482ce54db13610fe8"
+        tx_patterns:
+            -
+                transaction_type: Deposit
+                buy_currency: AVAX
+            -
+                transaction_type: Withdrawal
+                sell_currency: UNI-V2
+        actions:
+            -
+                name: rename_to
+                token_name: UNI-V2
+                rename_to: UNI-V2-AVAX/WMATIC
+            -
+                name: convert_to_trades
+    -
+        tx_hashes:
             - "0x385ad88bfb84729a61860d2519eeb50ed3ea41160c71ed7b1ab4b7b7a362679e"
         tx_patterns:
             -
@@ -8658,6 +8979,8 @@ alterations:
             - "0x3b57f011b1120200d62384d816a76c9a3d4d60d11f8c9983ce7fb07497ecd77c"
             - "0x85519792afdf15cdfbfaf2864faa97a3727af8e563e0b26717b39f5a1101eb9c"
             - "0x78e8e6c1f0ab048516fc73757d8bfe40d7a6af71e8752c5d43cb192d72f909c4"
+            - "0x37fa07a092ca9f6bb97e83f205564f5c238eeb41f1ac0a819b4467c434f3b612"
+            - "0xb5b2637d6bed9dccef788ac06a01f873acd5cfa3aabe2d0bbb047bc095ba327d"
         tx_patterns:
             -
                 transaction_type: Deposit
