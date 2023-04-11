@@ -1,10 +1,10 @@
 [build-system]
-requires = ["poetry>=1.0"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "crypto_tools"
-version = "0.0.1"
+version = "0.0.2"
 description = "Tools for cryptocurrencies"
 authors = ["James Lewellyn <lewellyn.james@gmail.com>"]
 maintainers = ["James Lewellyn <lewellyn.james@gmail.com>"]
@@ -14,7 +14,7 @@ license = "MIT"
 tokentax_csv_consolidate = 'crypto_tools.tokentax_csv_consolidate:main'
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 pydantic = "*"
 pyyaml = "*"
 
@@ -39,6 +39,7 @@ flake8-import-style = "*"
 flake8-logging-format = "*" 
 flake8-mutable = "*"
 flake8-print = "*"
+flake8-pylint = "*"
 flake8-pytest = "*"
 flake8-pytest-style = "*"
 flake8-quotes = "*"
@@ -46,6 +47,7 @@ flake8-string-format = "*"
 flake8-typing-imports = "*"
 mypy = "*"
 pep8-naming = "*"
+pylint = "*"
 pytest = "*"
 types-PyYAML = "*"
 

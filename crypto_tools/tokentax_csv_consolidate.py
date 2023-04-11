@@ -508,6 +508,23 @@ class AlterationActionConvertWithdrawalsToRepays(BaseModel):
             output_transaction_list.append(transaction)
         return output_transaction_list
 
+class AlterationActionConvertWithdrawalsToGifts(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_withdrawals_to_gifts"]
+
+    def perform_on_transaction_list(
+        self: AlterationActionConvertWithdrawalsToGifts,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to a Borrow."""
+        output_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.transaction_type == TokenTaxTransactionType.WITHDRAWAL:
+                transaction.transaction_type = TokenTaxTransactionType.GIFT
+            output_transaction_list.append(transaction)
+        return output_transaction_list
+
 
 def convert_to_stake_with_new_type(
     transaction_list: List[TokenTaxTransaction],
@@ -865,6 +882,7 @@ AlterationActionUnion = Annotated[
         AlterationActionConvertDepositsToIncomes,
         AlterationActionConvertDepositsToBorrows,
         AlterationActionConvertWithdrawalsToRepays,
+        AlterationActionConvertWithdrawalsToGifts,
         AlterationActionConvertToAirdrop,
         AlterationActionAddMissing,
         AlterationActionKeepOnlyTypes,

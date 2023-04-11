@@ -130,3 +130,9 @@ dmypy.json
 
 # Check this in manually when making a release
 poetry.lock
+
+# Mac stuff
+.DS_Store
+
+# VSCode stuff
+settings.json

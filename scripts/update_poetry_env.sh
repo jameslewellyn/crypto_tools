@@ -8,5 +8,5 @@ PYTHON_REPO_DIR="$(dirname "$THIS_SCRIPT_DIR")"
 PYTHON_SOURCE_DIR="${PYTHON_REPO_DIR}/$(basename "$PYTHON_REPO_DIR")"
 
 (cd "$PYTHON_REPO_DIR"
-	poetry update
+	python3 -m poetry update
 )
