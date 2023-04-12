@@ -1004,7 +1004,7 @@ def quick_print_transactions_same_hash_list(transaction_list: List[TokenTaxTrans
     logger.info("--- %s", transaction_list[0].exchange_id.transaction_hash)
     for (i, transaction) in enumerate(transaction_list):
         logger.info(
-            "#%d) %s: BUY = %s:%f, SELL = %s:%f",
+            "#%d) %s: BUY = %s : %f, SELL = %s : %f",
             i,
             transaction.transaction_type.value,
             transaction.buy_currency,
