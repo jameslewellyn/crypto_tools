@@ -193,10 +193,10 @@ def ensure_common_elements_are_identical_in_transaction_list(transaction_list: L
     ):
         raise Exception("Cannot handle multiple Dates within the same transaction hash.")
     # if not all(
-        # abs((transaction.updated_at - transaction_list[0].updated_at).total_seconds()) < 1
-        # for transaction in transaction_list
+    # abs((transaction.updated_at - transaction_list[0].updated_at).total_seconds()) < 1
+    # for transaction in transaction_list
     # ):
-        # raise Exception("Cannot handle multiple Updated At Times within the same transaction hash.")
+    # raise Exception("Cannot handle multiple Updated At Times within the same transaction hash.")
 
 
 def separate_buy_from_sell_transactions(
@@ -508,6 +508,7 @@ class AlterationActionConvertWithdrawalsToRepays(BaseModel):
             output_transaction_list.append(transaction)
         return output_transaction_list
 
+
 class AlterationActionConvertWithdrawalsToGifts(BaseModel):
     """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
 
@@ -522,6 +523,24 @@ class AlterationActionConvertWithdrawalsToGifts(BaseModel):
         for transaction in transaction_list:
             if transaction.transaction_type == TokenTaxTransactionType.WITHDRAWAL:
                 transaction.transaction_type = TokenTaxTransactionType.GIFT
+            output_transaction_list.append(transaction)
+        return output_transaction_list
+
+
+class AlterationActionConvertWithdrawalsToSpendss(BaseModel):
+    """PyDantic class schema for actions to be taken, in order, on the list of transactions."""
+
+    name: Literal["convert_withdrawals_to_spends"]
+
+    def perform_on_transaction_list(
+        self: AlterationActionConvertWithdrawalsToGifts,
+        transaction_list: List[TokenTaxTransaction],
+    ) -> List[TokenTaxTransaction]:
+        """Convert transactions to a Borrow."""
+        output_transaction_list: List[TokenTaxTransaction] = list()
+        for transaction in transaction_list:
+            if transaction.transaction_type == TokenTaxTransactionType.WITHDRAWAL:
+                transaction.transaction_type = TokenTaxTransactionType.SPEND
             output_transaction_list.append(transaction)
         return output_transaction_list
 
@@ -882,6 +901,7 @@ AlterationActionUnion = Annotated[
         AlterationActionConvertDepositsToIncomes,
         AlterationActionConvertDepositsToBorrows,
         AlterationActionConvertWithdrawalsToRepays,
+        AlterationActionConvertWithdrawalsToSpendss,
         AlterationActionConvertWithdrawalsToGifts,
         AlterationActionConvertToAirdrop,
         AlterationActionAddMissing,
@@ -1002,7 +1022,7 @@ def match_transaction_list_to_alteration(
 def quick_print_transactions_same_hash_list(transaction_list: List[TokenTaxTransaction]) -> None:
     """Print important info for easy viewing."""
     logger.info("--- %s", transaction_list[0].exchange_id.transaction_hash)
-    for (i, transaction) in enumerate(transaction_list):
+    for i, transaction in enumerate(transaction_list):
         logger.info(
             "#%d) %s: BUY = %s : %f, SELL = %s : %f",
             i,
@@ -1073,7 +1093,7 @@ def main() -> None:
     no_match_transaction_hash_count_dict: Dict[int, int] = dict()
     output_transaction_hash_count_dict: Dict[int, int] = dict()
     output_transaction_list: List[TokenTaxTransaction] = list()
-    for (transaction_hash, separated_transaction_list) in separated_transaction_list_of_lists.items():
+    for transaction_hash, separated_transaction_list in separated_transaction_list_of_lists.items():
         # logger.info("__________________________________________________")
         # quick_print_transactions_same_hash_list(separated_transaction_list)
         same_transaction_hash_count = len(separated_transaction_list)
@@ -1151,6 +1171,7 @@ def main() -> None:
 
     # Successful exit
     sys.exit(0)
+
 
 # Paraswap trades, confirm good
 # Convert_deposit/withdrawal to trade -> ensure all called out hashes end up in fixed
